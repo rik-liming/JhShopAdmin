@@ -12,7 +12,7 @@ const whiteList = ['/login', '/auth-redirect']; // no redirect whitelist
 // 在应用初始化时就进行动态路由的处理
 export async function initDynamicRoutes() {
   const adminStore = store.admin();
-  const hasToken = !!adminStore.loginToken;
+  const hasToken = !!adminStore.adminLoginToken;
 
   if (hasToken) {
     const hasRoles = !!adminStore.admin?.value?.role;
@@ -41,7 +41,7 @@ router.beforeEach(async (to, from, next) => {
   // determine whether the user has logged in
   const adminStore = store.admin()
 
-  const hasToken = !!adminStore.loginToken
+  const hasToken = !!adminStore.adminLoginToken
 
   if (hasToken) {
 

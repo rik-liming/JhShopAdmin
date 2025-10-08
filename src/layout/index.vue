@@ -66,8 +66,8 @@ export default defineComponent({
         backgroundRepeat: 'no-repeat',
 
         /* 自适应 iPhone 风格圆角 */
-        borderRadius: `${minRadius}px`, // 通过计算得到的最小值
-        overflow: 'hidden',
+        // borderRadius: `${minRadius}px`, // 通过计算得到的最小值
+        // overflow: 'hidden',
       };
     },
     // 使用当前路由判断是否需要显示 sidebar

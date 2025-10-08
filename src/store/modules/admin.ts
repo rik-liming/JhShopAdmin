@@ -18,7 +18,7 @@ export default defineStore({
   id: 'admin',
   state: () => ({
     // 分开存储
-    loginToken: useStorage('adminLoginToken', ''),
+    adminLoginToken: useStorage('adminLoginToken', ''),
     admin: useStorage<IAdmin>('admin', {} as IAdmin),
   }),
   actions: {
@@ -29,7 +29,7 @@ export default defineStore({
         if (response.data.code == 10000) {
           const { token, admin } = response.data.data;
 
-          this.loginToken = token
+          this.adminLoginToken = token
           this.admin.value = {
             id: admin.id,
             userName: admin.user_name,
@@ -49,8 +49,8 @@ export default defineStore({
     async logout() {
       try {
         // 登出是前端登出即可，后端处理失败也同样退出
-        const response = await AdminApi.logout(this.loginToken)
-        this.loginToken = '';
+        const response = await AdminApi.logout(this.adminLoginToken)
+        this.adminLoginToken = '';
         this.admin = null;
         resetRouter();
         tagsViewStore().delAllViews();
@@ -62,27 +62,5 @@ export default defineStore({
         throw error;
       }
     },
-
-    // dynamically modify permissions
-    async changeRoles(role: string) {
-      const token = role + '-token';
-      this.token = token;
-      // setToken(token);
-
-      const infoRes = await this.getInfo();
-      const roles = infoRes.roles || [];
-
-      resetRouter();
-
-      // generate accessible routes map based on roles
-      const accessRoutes = await permissionStore().generateRoutes(roles);
-
-      // dynamically add accessible routes
-      accessRoutes.forEach(item => {
-        router.addRoute(item);
-      });
-
-      tagsViewStore().delAllViews();
-    }
   }
 });

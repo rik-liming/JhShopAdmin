@@ -48,7 +48,8 @@ app.directive('waves', waves)
 async function initDynamicRoutes() {
   await permission.initDynamicRoutes()
 }
-initDynamicRoutes()
 
-app.use(router);
-app.mount('#app');
+initDynamicRoutes().then(() => {
+  app.use(router);  // 在动态路由初始化完成后挂载路由
+  app.mount('#app');
+});

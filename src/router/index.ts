@@ -87,6 +87,23 @@ export const constantRoutes:RouteRecordRaw[] = [
  */
 export const asyncRoutes:RouteRecordRaw[] = [
   {
+    path: '/user',
+    name: 'User',
+    meta: { 
+      roles: ['admin', 'superAdmin']
+    },
+    component: Layout,
+    redirect: '/user/index',
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/user/index.vue'),
+        name: 'UserIndex',
+        meta: { title: '会员管理', icon: 'user', affix: true }
+      }
+    ]
+  },
+  {
     path: '/order/buyer/buy',
     component: Layout,
     name: 'OrderBuyerBuy',
@@ -300,20 +317,6 @@ export const asyncRoutes:RouteRecordRaw[] = [
       }
     ]
   },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Layout,
-    redirect: '/profile/index',
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/user/profile/index.vue'),
-        name: 'ProfileIndex',
-        meta: { title: '会员信息', icon: 'user', affix: true }
-      }
-    ]
-  },
 
   // logout
   {
@@ -329,7 +332,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
       }
     ],
     beforeEnter: async(to, from, next) => {
-      await store.user().logout();
+      await store.admin().logout();
       next('/login')
     } 
   },
