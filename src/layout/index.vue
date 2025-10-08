@@ -3,6 +3,10 @@
     <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
     <sidebar v-if="isSidebarVisible" class="sidebar-container" />
     <div :class="{ hasTagsView: needTagsView }" class="main-container" :style="bgStyle">
+      <div :class="{ 'fixed-header': fixedHeader }">
+        <navbar />
+        <!-- <tags-view v-if="needTagsView" /> -->
+      </div>
       <app-main />
       <!-- <right-panel v-if="showSettings">
         <settings />
@@ -12,7 +16,7 @@
 </template>
 
 <script>
-import { AppMain, Settings, Sidebar, TagsView } from './components';
+import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components';
 import ResizeMixin from './mixin/ResizeHandler';
 import { mapState } from 'pinia';
 import store from '@/store';
@@ -23,6 +27,7 @@ import { useRoute } from 'vue-router';
 export default defineComponent({
   name: 'LayoutIndex',
   components: {
+    Navbar,
     AppMain,
     Settings,
     Sidebar,
