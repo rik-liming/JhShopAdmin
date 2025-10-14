@@ -7,11 +7,11 @@
         <h3 class="title">嘉禾管理后台</h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="userName">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
-        <el-input ref="username" v-model="loginForm.username" placeholder="用户名" name="username" type="text"
+        <el-input ref="user_name" v-model="loginForm.user_name" placeholder="用户名" name="user_name" type="text"
                   tabindex="1" autocomplete="on" />
       </el-form-item>
 
@@ -111,11 +111,11 @@ export default defineComponent({
     };
     return {
       loginForm: {
-        username: '',
+        user_name: '',
         password: '',
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUserName }],
+        user_name: [{ required: true, trigger: 'blur', validator: validateUserName }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       passwordType: 'password',
@@ -145,8 +145,8 @@ export default defineComponent({
   },
   mounted() {
     this.$nextTick(() => {
-      if (this.loginForm.username === '') {
-        this.$refs.username?.focus();  // 这里使用 optional chaining (?.) 避免 undefined 错误
+      if (this.loginForm.user_name === '') {
+        this.$refs.userName?.focus();  // 这里使用 optional chaining (?.) 避免 undefined 错误
       } else if (this.loginForm.password === '') {
         this.$refs.password?.focus();  // 这里使用 optional chaining (?.) 避免 undefined 错误
       }
@@ -172,10 +172,10 @@ export default defineComponent({
         try {
           const loginResp = await AdminApi.login(this.loginForm)
           if (loginResp.data.code == 10000) {
-            if (loginResp.data.data.qrCodeUrl) {
+            if (loginResp.data.data.qr_code_url) {
               this.needBindOtp = true
-              this.qrCodeUrl = loginResp.data.data.qrCodeUrl
-            } else if (loginResp.data.data.needOtp) {
+              this.qrCodeUrl = loginResp.data.data.qr_code_url
+            } else if (loginResp.data.data.need_otp) {
               this.needVerifyOtp = true
             }
           } else {
@@ -191,7 +191,7 @@ export default defineComponent({
     async submitOtp() {
       const adminStore = store.admin()
       try {
-        const response = await adminStore.verifyOtp(this.loginForm.username, this.otp)
+        const response = await adminStore.verifyOtp(this.loginForm.user_name, this.otp)
         if (response.data.code == 10000) {
           this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
         } else {

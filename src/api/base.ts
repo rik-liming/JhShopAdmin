@@ -14,7 +14,7 @@ axiosInstance.interceptors.response.use(
       // 弹框提示用户登录失效
         ElMessage.warning('登录已失效，请重新登录。')
         
-        router.push('/logout')
+        router.push('/forcelogout')
         return
     }
     return response; // 正常响应返回

@@ -45,6 +45,21 @@ export const constantRoutes:RouteRecordRaw[] = [
     meta: { hidden: true }
   },
   {
+    path: '/forcelogout',
+    name: 'ForceLogout',
+    component: () => import('@/views/login/index.vue'),
+    meta: { hidden: true },
+    beforeEnter: async(to, from, next) => {
+      try {
+        await store.admin().logout();
+        next('/login'); // 跳转到登录页面
+      } catch (error) {
+        console.error('Logout failed:', error);
+        next('/login'); // 如果注销失败，也跳转到登录页面
+      }
+    } 
+  },
+  {
     path: '/auth-redirect',
     name: 'AuthRedirect',
     component: () => import('@/views/login/auth-redirect.vue'),

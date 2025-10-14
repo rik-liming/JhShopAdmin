@@ -25,10 +25,10 @@ export async function logout(adminLoginToken) {
 
 // request user list
 export async function fetchUserList(adminLoginToken, queryParams) {
-    const { page, pagesize, keyword, role } = queryParams;
+    const { page, page_size, keyword, role } = queryParams;
 
     // 构建请求的基础 URL
-    let requestUrl = `/api/admin/user/page?page=${page}&pagesize=${pagesize}`;
+    let requestUrl = `/api/admin/user/page?page=${page}&page_size=${page_size}`;
     if (keyword) {
         requestUrl += `&keyword=${encodeURIComponent(keyword)}`;
     }

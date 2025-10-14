@@ -23,9 +23,9 @@ export default defineStore({
   }),
   actions: {
     // user verify otp and login
-    async verifyOtp(username: string, otp: string) {
+    async verifyOtp(user_name: string, otp: string) {
       try {
-        const response = await AdminApi.verifyOtp({username, otp})
+        const response = await AdminApi.verifyOtp({user_name, otp})
         if (response.data.code == 10000) {
           const { token, admin } = response.data.data;
 

@@ -19,9 +19,9 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="100" >
+      <el-table-column label="ID" prop="id" align="center" width="200" >
         <template v-slot="{row}">
-          <span>{{ row.id }}</span>
+          <span>{{ formatIdDisplay(row.id) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="用户名" width="150px" align="center">
@@ -71,7 +71,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.pagesize" @pagination="handlePageChange" />
+    <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
 
     <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -124,6 +124,7 @@ import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
 import { ElMessage } from 'element-plus';
+import { formatIdDisplay } from '@/utils/tool'
 
 const roleTypeOptions = [
   { key: 'platform', display_name: '平台总代理' },
@@ -173,7 +174,7 @@ export default defineComponent({
       listLoading: true,
       listQuery: {
         page: 1,
-        pagesize: 20,
+        page_size: 20,
         keyword: '',
         role: '',
       },
@@ -199,14 +200,8 @@ export default defineComponent({
         update: '编辑',
         create: '新建'
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      downloadLoading: false
     };
   },
   created() {
@@ -214,6 +209,7 @@ export default defineComponent({
   },
   methods: {
     parseTime,
+    formatIdDisplay,
     async getList() {
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
@@ -260,43 +256,6 @@ export default defineComponent({
         });
       }
     },
-    resetTemp() {
-      this.temp = {
-        id: undefined,
-        user_name: '',
-        real_name: '',
-        email: '',
-        role: '',
-        status: 1,
-        created_at: undefined
-      };
-    },
-    handleCreate() {
-      this.resetTemp();
-      this.dialogStatus = 'create';
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate();
-      });
-    },
-    createData() {
-      // this.$refs['dataForm'].validate((valid) => {
-      //   if (valid) {
-      //     this.temp.id = parseInt(Math.random() * 100) + 1024; // mock a id
-      //     this.temp.author = 'vue-element-admin';
-      //     createArticle(this.temp).then(() => {
-      //       this.list.unshift(this.temp);
-      //       this.dialogFormVisible = false;
-      //       ElNotification({
-      //         title: 'Success',
-      //         message: 'Created Successfully',
-      //         type: 'success',
-      //         duration: 2000
-      //       });
-      //     });
-      //   }
-      // });
-    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); // copy obj
       this.dialogStatus = 'update';
@@ -323,24 +282,6 @@ export default defineComponent({
           });
         }
       }
-    },
-    handleDelete(row, index) {
-      ElNotification({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
-      });
-      this.list.splice(index, 1);
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j]);
-        } else {
-          return v[j];
-        }
-      }));
     },
   }
 });
