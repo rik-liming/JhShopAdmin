@@ -10,6 +10,11 @@ import {
   Plus as IconPublish,
   Money as IconFinance,
   SwitchButton as IconLogout,
+  Setting as IconSetting,
+  Tools as IconSettingSystem,
+  Avatar as IconSettingPerson,
+  Stamp as IconPermission,
+  Present as IconReward,
 } from '@element-plus/icons-vue';
 import store from '@/store';
 
@@ -102,6 +107,72 @@ export const constantRoutes:RouteRecordRaw[] = [
  */
 export const asyncRoutes:RouteRecordRaw[] = [
   {
+    path: '/setting',
+    name: 'Setting',
+    meta: { 
+      roles: ['admin', 'superAdmin'],
+      title: '常规管理', 
+      icon: markRaw(IconSetting),
+      alwaysShow: true, // will always show the root menu
+    },
+    component: Layout,
+    children: [
+      {
+        path: 'system',
+        component: () => import('@/views/setting/system.vue'),
+        name: 'SettingSystem',
+        meta: { 
+          title: '系统配置', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+      {
+        path: 'person',
+        component: () => import('@/views/setting/person.vue'),
+        name: 'SettingPerson',
+        meta: { 
+          title: '个人配置', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+    ]
+  },
+  {
+    path: '/permission',
+    name: 'Permission',
+    meta: { 
+      roles: ['admin', 'superAdmin'],
+      title: '权限管理', 
+      icon: markRaw(IconPermission),
+      alwaysShow: true, // will always show the root menu
+    },
+    component: Layout,
+    children: [
+      {
+        path: 'admin',
+        component: () => import('@/views/permission/admin.vue'),
+        name: 'PermissionAdmin',
+        meta: { 
+          title: '管理员管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+      {
+        path: 'role',
+        component: () => import('@/views/permission/role.vue'),
+        name: 'PermissionRole',
+        meta: { 
+          title: '角色管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+    ]
+  },
+  {
     path: '/user',
     name: 'User',
     meta: { 
@@ -119,217 +190,120 @@ export const asyncRoutes:RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/order/buyer/buy',
-    component: Layout,
-    name: 'OrderBuyerBuy',
+    path: '/transaction',
+    name: 'transaction',
     meta: { 
-      hidden: true,
-      roles: ['buyer']
+      roles: ['admin', 'superAdmin'],
+      title: '财务管理', 
+      icon: markRaw(IconPermission),
+      alwaysShow: true, // will always show the root menu
     },
+    component: Layout,
     children: [
       {
-        path: '',
-        name: 'OrderBuyerBuyIndex',
-        component: () => import('@/views/buyer/order/buy.vue')
+        path: 'record',
+        component: () => import('@/views/transaction/record.vue'),
+        name: 'TransactionRecord',
+        meta: { 
+          title: '财务变动', 
+          affix: true,
+          needIndent: true,
+        }
       },
-    ]
-  },
-  {
-    path: '/order/buyer/detail',
-    component: Layout,
-    name: 'OrderBuyerDetail',
-    meta: { 
-      hidden: true,
-      roles: ['buyer']
-    },
-    children: [
       {
-        path: '',
-        name: 'OrderBuyerDetailIndex',
-        component: () => import('@/views/buyer/order/detail.vue')
-      }
-    ]
-  },
-  {
-    path: '/order/seller/detail',
-    name: 'OrderSellerDetail',
-    component: Layout,
-    meta: { 
-      hidden: true,
-      roles: ['seller', 'agent']
-    },
-    children: [
+        path: 'recharge',
+        component: () => import('@/views/transaction/recharge.vue'),
+        name: 'TransactionRecharge',
+        meta: { 
+          title: '充值管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
       {
-        path: '',
-        name: 'OrderSellerDetailIndex',
-        component: () => import('@/views/seller/order/detail.vue')
-      }
-    ]
-  },
-  {
-    path: '/deposit/detail',
-    name: 'DepositDetail',
-    component: Layout,
-    meta: { 
-      hidden: true,
-      roles: ['seller', 'agent']
-    },
-    children: [
+        path: 'transfer',
+        component: () => import('@/views/transaction/transfer.vue'),
+        name: 'TransactionTransfer',
+        meta: { 
+          title: '转账管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
       {
-        path: '',
-        name: 'DepositDetailIndex',
-        component: () => import('@/views/seller/deposit/detail.vue')
-      }
-    ]
-  },
-  {
-    path: '/transfer/detail',
-    name: 'TransferDetail',
-    component: Layout,
-    meta: { 
-      hidden: true,
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        name: 'TransferDetailIndex',
-        component: () => import('@/views/seller/transfer/detail.vue')
-      }
-    ]
-  },
-  {
-    path: '/withdraw/detail',
-    name: 'WithdrawDetail',
-    component: Layout,
-    meta: { 
-      hidden: true,
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        name: 'WithdrawDetailIndex',
-        component: () => import('@/views/seller/withdraw/detail.vue')
-      }
-    ]
-  },
-  {
-    path: '/report',
-    name: 'Report',
-    component: Layout,
-    meta: { 
-      hidden: true,
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        name: 'ReportIndex',
-        component: () => import('@/views/seller/report/index.vue')
-      }
-    ]
-  },
-
-  // 需要展示在侧边栏的
-  {
-    path: '/deposit',
-    name: 'Deposit',
-    component: Layout,
-    meta: { 
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/seller/deposit/index.vue'),
-        name: 'DepositIndex',
-        meta: { title: '充值', icon: markRaw(IconDeposit), affix: true }
-      }
-    ]
-  },
-  {
-    path: '/transfer',
-    name: 'Transfer',
-    component: Layout,
-    redirect: '/transfer/index',
-    meta: { 
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/seller/transfer/index.vue'),
-        name: 'TransferIndex',
-        meta: { title: '转账', icon: markRaw(IconTransfer), affix: true }
-      }
-    ]
-  },
-  {
-    path: '/withdraw',
-    name: 'Withdraw',
-    component: Layout,
-    redirect: '/withdraw/index',
-    meta: { 
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/seller/withdraw/index.vue'),
-        name: 'WithdrawIndex',
-        meta: { title: '提现', icon: markRaw(IconWithdraw), affix: true }
-      }
+        path: 'withdraw',
+        component: () => import('@/views/transaction/withdraw.vue'),
+        name: 'TransactionWithdraw',
+        meta: { 
+          title: '提现管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
     ]
   },
   {
     path: '/order',
     name: 'Order',
-    component: Layout,
-    redirect: '/order/index',
     meta: { 
-      roles: ['buyer', 'seller', 'agent']
+      alwaysShow: true, // will always show the root menu
+      roles: ['admin', 'superAdmin'],
+      title: '订单管理', 
+      icon: 'shopping',
     },
+    component: Layout,
+    children: [
+      {
+        path: 'listing',
+        component: () => import('@/views/order/listing.vue'),
+        name: 'OrderListing',
+        meta: { 
+          title: '挂单管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+      {
+        path: 'normal',
+        component: () => import('@/views/order/normal.vue'),
+        name: 'OrderNormal',
+        meta: { 
+          title: '常规订单', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+      {
+        path: 'auto',
+        component: () => import('@/views/order/auto.vue'),
+        name: 'OrderAuto',
+        meta: { 
+          title: '自动化订单', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+    ]
+  },
+  {
+    path: '/reward',
+    name: 'Reward',
+    meta: { 
+      roles: ['admin', 'superAdmin'],
+    },
+    redirect: '/reward/index',
+    component: Layout,
     children: [
       {
         path: 'index',
-        component: () => import('@/views/user/order/index.vue'),
-        name: 'OrderIndex',
-        meta: { title: '订单', icon: 'shopping', affix: true }
-      }
-    ]
-  },
-  {
-    path: '/order/seller/publish',
-    name: 'OrderSellerPublish',
-    component: Layout,
-    meta: { 
-      roles: ['seller', 'agent']
-    },
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/seller/order/publish.vue'),
-        name: 'OrderSellerPublishIndex',
-        meta: { title: '发布交易', icon: markRaw(IconPublish), affix: true }
-      }
-    ]
-  },
-  {
-    path: '/finance',
-    name: 'Finance',
-    component: Layout,
-    redirect: '/finance/index',
-    meta: { 
-      roles: ['buyer', 'seller', 'agent']
-    },
-    children: [
-      {
-        path: 'finance',
-        component: () => import('@/views/user/finance/index.vue'),
-        name: 'FinanceIndex',
-        meta: { title: '财务变动', icon: markRaw(IconFinance), affix: true }
-      }
+        component: () => import('@/views/reward/index.vue'),
+        name: 'RewardIndex',
+        meta: { 
+          title: '奖励管理', 
+          affix: true,
+          icon: markRaw(IconReward),
+        }
+      },
     ]
   },
 

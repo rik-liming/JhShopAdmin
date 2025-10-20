@@ -15,7 +15,8 @@
             <component v-else :is="get2MetaIconPath(onlyOneChild, item)" class="svg-icon el-svg-icon" />
           </template>
           <template #title>
-            <span class="text text-one">{{ onlyOneChild.meta.title }}</span>
+            <span v-if="onlyOneChild.meta.needIndent" class="text text-one tw-ml-6">{{ onlyOneChild.meta.title }}</span>
+            <span v-else class="text text-one">{{ onlyOneChild.meta.title }}</span>
           </template>
         </el-menu-item>
       </app-link>

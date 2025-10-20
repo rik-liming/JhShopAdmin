@@ -82,7 +82,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     server: {
       host: 'localhost',
-      port: 8001,
+      port: 8002,
       proxy: {
         '/api-test': {
           target: 'https://api.midfar.com/dspt_test/api',

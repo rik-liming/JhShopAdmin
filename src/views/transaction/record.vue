@@ -1,8 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.id" clearable placeholder="ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
-      <el-input v-model="listQuery.email" clearable placeholder="邮箱" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
+      <el-input v-model="listQuery.keyword" placeholder="名字" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
       <el-select v-model="listQuery.role" placeholder="角色" clearable class="filter-item" style="width: 130px; margin-right: 8px;">
         <el-option v-for="item in roleTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select>
@@ -119,7 +118,7 @@
 <script>
 import { defineComponent, markRaw } from 'vue';
 import { Search, Edit } from '@element-plus/icons-vue';
-import * as UserApi from '@/api/user';
+import * as AdminApi from '@/api/admin';
 import store from '@/store';
 import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
@@ -176,8 +175,7 @@ export default defineComponent({
       listQuery: {
         page: 1,
         page_size: 20,
-        id: '',
-        email: '',
+        keyword: '',
         role: '',
       },
       isRequesting: false,
@@ -216,7 +214,7 @@ export default defineComponent({
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
       try {
-        const listResp = await UserApi.fetchUserList(adminLoginToken, this.listQuery)
+        const listResp = await AdminApi.fetchUserList(adminLoginToken, this.listQuery)
         if (listResp.data.code === 10000) {
           this.list = listResp.data.data.users;
           this.total = listResp.data.data.total;
@@ -242,7 +240,7 @@ export default defineComponent({
     },
     async handleModifyStatus(row, status) {
       const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await UserApi.updateUser(adminLoginToken, {
+      const updateResp = await AdminApi.updateUser(adminLoginToken, {
         id: row.id,
         status,
       })
@@ -271,7 +269,7 @@ export default defineComponent({
       if (isValid) {
         const adminLoginToken = store.admin().adminLoginToken
         const tempData = Object.assign({}, this.temp);
-        const updateResp = await UserApi.updateUser(adminLoginToken, tempData)
+        const updateResp = await AdminApi.updateUser(adminLoginToken, tempData)
         if (updateResp.data.code === 10000) {
           const index = this.list.findIndex(v => v.id === this.temp.id);
           this.list.splice(index, 1, this.temp);

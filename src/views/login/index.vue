@@ -3,32 +3,39 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on"
              label-position="left">
 
-      <div class="title-container">
-        <h3 class="title">嘉禾管理后台</h3>
+      <div class="tw-bg-black tw-p-10">
+        <div class="title-container">
+          <h3 class="title">嘉禾管理后台</h3>
+        </div>
+
+        <el-form-item prop="userName">
+          <span class="svg-container">
+            <svg-icon icon-class="user" />
+          </span>
+          <el-input ref="user_name" v-model="loginForm.user_name" placeholder="用户名" name="user_name" type="text"
+                    tabindex="1" autocomplete="on" />
+        </el-form-item>
+
+        <el-form-item prop="password">
+          <span class="svg-container">
+            <svg-icon icon-class="password" />
+          </span>
+          <el-input :key="passwordType" ref="password" v-model="loginForm.password" :type="passwordType"
+                    placeholder="密码" name="password" tabindex="2" autocomplete="on"
+                    @keyup.enter="handleLogin" />
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+          </span>
+        </el-form-item>
+
+        <el-button 
+          :loading="loading" 
+          type="primary" 
+          style="width:100%;margin-bottom:30px;" 
+          @click.prevent="handleLogin"
+        >
+          登录</el-button>
       </div>
-
-      <el-form-item prop="userName">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input ref="user_name" v-model="loginForm.user_name" placeholder="用户名" name="user_name" type="text"
-                  tabindex="1" autocomplete="on" />
-      </el-form-item>
-
-      <el-form-item prop="password">
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input :key="passwordType" ref="password" v-model="loginForm.password" :type="passwordType"
-                  placeholder="密码" name="password" tabindex="2" autocomplete="on"
-                  @keyup.enter="handleLogin" />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
-      </el-form-item>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.prevent="handleLogin">
-        登录</el-button>
     </el-form>
 
     <el-dialog v-model="needBindOtp" title="验证码校验" class="custom-dialog">
@@ -272,7 +279,10 @@ $light_gray: #eee;
 .login-container {
   min-height: 100%;
   width: 100%;
-  background-color: $bg;
+  // background-color: $bg;
+  background-image: url('@/assets/login-bg.jpg');
+  background-size: cover; /* 图片铺满 */
+  background-position: center; /* 居中 */
   overflow: hidden;
 
   .login-form {
@@ -324,18 +334,6 @@ $light_gray: #eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
-  }
-
-  .thirdparty-button {
-    position: absolute;
-    right: 0;
-    bottom: 6px;
-  }
-
-  @media only screen and (max-width: 470px) {
-    .thirdparty-button {
-      display: none;
-    }
   }
 
   :deep(div.el-dialog.custom-dialog) {
