@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.keyword" placeholder="名字" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
+      <el-input v-model="listQuery.user_id" placeholder="用户ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
       <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
         <span v-waves>搜索</span>
       </el-button>
@@ -16,12 +16,12 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="订单ID" prop="display_recharge_id" align="center" width="200" >
+      <el-table-column label="订单ID" align="center" width="200" >
         <template v-slot="{row}">
           <span>{{ row.display_recharge_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户ID" prop="user_id" align="center" width="200" >
+      <el-table-column label="用户ID" align="center" width="200" >
         <template v-slot="{row}">
           <span>{{ formatIdDisplay(row.user_id) }}</span>
         </template>
@@ -58,7 +58,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="充值时间" width="150px" align="center">
+      <el-table-column label="申请时间" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
@@ -103,7 +103,7 @@ const statusFilterMap = {
 };
 
 export default defineComponent({
-  name: 'UserPage',
+  name: 'RechargePage',
   components: { Pagination },
   directives: { waves },
   data() {
@@ -117,27 +117,11 @@ export default defineComponent({
       listQuery: {
         page: 1,
         page_size: 20,
-        keyword: '',
+        user_id: '',
       },
       isRequesting: false,
       statusMap,
       statusFilterMap,
-      temp: {
-        id: undefined,
-        user_name: '',
-        real_name: '',
-        email: '',
-        status: 1,
-        created_at: undefined
-      },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: '编辑',
-        create: '新建'
-      },
-      rules: {
-      },
     };
   },
   created() {
@@ -190,33 +174,6 @@ export default defineComponent({
           type: 'success',
           duration: 2000
         });
-      }
-    },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.dialogStatus = 'update';
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate();
-      });
-    },
-    async updateData() {
-      const isValid = await this.$refs['dataForm'].validate()
-      if (isValid) {
-        const adminLoginToken = store.admin().adminLoginToken
-        const tempData = Object.assign({}, this.temp);
-        const updateResp = await AdminApi.updateUser(adminLoginToken, tempData)
-        if (updateResp.data.code === 10000) {
-          const index = this.list.findIndex(v => v.id === this.temp.id);
-          this.list.splice(index, 1, this.temp);
-          this.dialogFormVisible = false;
-          ElNotification({
-            title: 'Success',
-            message: '更新成功',
-            type: 'success',
-            duration: 2000
-          });
-        }
       }
     },
   }

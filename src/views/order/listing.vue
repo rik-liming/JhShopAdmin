@@ -71,7 +71,7 @@
 <script>
 import { defineComponent, markRaw } from 'vue';
 import { Search, Edit } from '@element-plus/icons-vue';
-import * as OrderApi from '@/api/order';
+import * as OrderListingApi from '@/api/order_listing';
 import store from '@/store';
 import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
@@ -128,7 +128,7 @@ export default defineComponent({
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
       try {
-        const listResp = await OrderApi.getOrderListingByPage(adminLoginToken, this.listQuery)
+        const listResp = await OrderListingApi.getOrderListingByPage(adminLoginToken, this.listQuery)
         if (listResp.data.code === 10000) {
           this.list = listResp.data.data.orderListings;
           this.total = listResp.data.data.total;
@@ -154,7 +154,7 @@ export default defineComponent({
     },
     async handleModifyStatus(row, status) {
       const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await OrderApi.updateOrderListing(adminLoginToken, {
+      const updateResp = await OrderListingApi.updateOrderListing(adminLoginToken, {
         id: row.id,
         status,
       })
