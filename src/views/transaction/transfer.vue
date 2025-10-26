@@ -1,10 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.keyword" placeholder="名字" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
-      <el-select v-model="listQuery.role" placeholder="角色" clearable class="filter-item" style="width: 130px; margin-right: 8px;">
-        <el-option v-for="item in roleTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.sender_user_id" placeholder="转账用户ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
+      <el-input v-model="listQuery.receiver_user_id" placeholder="入账用户ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
       <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
         <span v-waves>搜索</span>
       </el-button>
@@ -19,29 +17,49 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="200" >
+      <el-table-column label="订单ID" align="center" width="170" >
         <template v-slot="{row}">
-          <span>{{ formatIdDisplay(row.id) }}</span>
+          <span>{{ row.display_transfer_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名" width="150px" align="center">
+      <el-table-column label="转账用户ID" align="center" width="100" >
         <template v-slot="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
+          <span>{{ formatIdDisplay(row.sender_user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="真实姓名" width="110px" align="center">
+      <el-table-column label="转账用户名" width="130px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.real_time ? row.real_time : '-' }}</span>
+          <span>{{ row.sender_user_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="注册邮箱" width="250px" align="center">
+      <el-table-column label="入账用户ID" align="center" width="100" >
         <template v-slot="{row}">
-          <span>{{ row.email ? row.email : '-' }}</span>
+          <span>{{ formatIdDisplay(row.receiver_user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="角色" width="150px" align="center">
+      <el-table-column label="入账用户名" width="130px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
+          <span>{{ row.receiver_user_name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="转账金额" width="130px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.amount }} USDT</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="币价（汇率）" width="110px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.exchange_rate }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="等值人民币" width="100px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.cny_amount }} 元</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="手续费" width="120px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.fee }} USDT</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" width="100" align="center">
@@ -51,21 +69,18 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="注册日期" width="150px" align="center">
+      <el-table-column label="申请时间" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
         <template v-slot="{row, $index}">
-          <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
-            启用
+          <el-button :disabled="row.status !== 0" size="small" type="success" @click="handleModifyStatus(row, 1)">
+            通过
           </el-button>
-          <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            禁用
-          </el-button>
-          <el-button type="primary" size="small" @click="handleUpdate(row)">
-            编辑
+          <el-button :disabled="row.status !== 0" size="small" type="danger" @click="handleModifyStatus(row, -1)">
+            驳回
           </el-button>
         </template>
       </el-table-column>
@@ -73,52 +88,13 @@
 
     <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
 
-    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="ID" prop="id">
-          <el-input v-model="temp.id" disabled />
-        </el-form-item>
-        <el-form-item label="用户名" prop="user_name">
-          <el-input v-model="temp.user_name" />
-        </el-form-item>
-        <el-form-item label="真实姓名" prop="real_name">
-          <el-input v-model="temp.real_name" />
-        </el-form-item>
-        <el-form-item label="注册邮箱" prop="email">
-          <el-input v-model="temp.email" disabled />
-        </el-form-item>
-        <el-form-item label="角色" prop="role" v-if="temp.role !== 'platform'">
-          <el-select v-model="temp.role" class="filter-item" placeholder="请选择角色">
-            <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="注册时间" prop="created_at">
-          <el-date-picker v-model="temp.created_at" type="datetime" disabled />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select" disabled>
-            <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">
-            取消
-          </el-button>
-          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-            确认
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import { defineComponent, markRaw } from 'vue';
 import { Search, Edit } from '@element-plus/icons-vue';
-import * as AdminApi from '@/api/admin';
+import * as TransferApi from '@/api/transfer';
 import store from '@/store';
 import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
@@ -126,42 +102,19 @@ import Pagination from '@/components/Pagination'; // secondary package based on 
 import { ElMessage } from 'element-plus';
 import { formatIdDisplay } from '@/utils/tool'
 
-const roleTypeOptions = [
-  { key: 'platform', display_name: '平台总代理' },
-  { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商家' },
-  { key: 'buyer', display_name: '买家' },
-  { key: 'autoBuyer', display_name: '自动化买家' },
-];
-const canSelectRoleTypeOptions = [
-  { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商家' },
-  { key: 'buyer', display_name: '买家' },
-  { key: 'autoBuyer', display_name: '自动化买家' },
-];
-const roleTypeMap = {
-  'platform': '平台总代理',
-  'agent': '代理',
-  'seller': '商家',
-  'buyer': '买家',
-  'autoBuyer': '自动化买家',
-  'default': '默认角色',
-}
-const statusOptions = [
-  { key: 0, display_name: '禁用' },
-  { key: 1, display_name: '正常' },
-];
 const statusMap = {
-  '0': '已禁用',
-  '1': '正常',
+  '0': '待审核',
+  '1': '已通过',
+  '-1': '已驳回',
 }
 const statusFilterMap = {
-  '0': 'danger',
+  '0': 'warning',
   '1': 'success',
+  '-1': 'danger',
 };
 
 export default defineComponent({
-  name: 'UserPage',
+  name: 'WithdrawPage',
   components: { Pagination },
   directives: { waves },
   data() {
@@ -175,33 +128,12 @@ export default defineComponent({
       listQuery: {
         page: 1,
         page_size: 20,
-        keyword: '',
-        role: '',
+        sender_user_id: '',
+        receiver_user_id: '',
       },
       isRequesting: false,
-      roleTypeOptions,
-      roleTypeMap,
-      canSelectRoleTypeOptions,
-      statusOptions,
       statusMap,
       statusFilterMap,
-      temp: {
-        id: undefined,
-        user_name: '',
-        real_name: '',
-        email: '',
-        role: '',
-        status: 1,
-        created_at: undefined
-      },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: '编辑',
-        create: '新建'
-      },
-      rules: {
-      },
     };
   },
   created() {
@@ -214,9 +146,9 @@ export default defineComponent({
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
       try {
-        const listResp = await AdminApi.fetchUserList(adminLoginToken, this.listQuery)
+        const listResp = await TransferApi.fetchTransferList(adminLoginToken, this.listQuery)
         if (listResp.data.code === 10000) {
-          this.list = listResp.data.data.users;
+          this.list = listResp.data.data.transfers;
           this.total = listResp.data.data.total;
         } else {
           ElMessage.error(listResp.data.msg)
@@ -240,7 +172,7 @@ export default defineComponent({
     },
     async handleModifyStatus(row, status) {
       const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await AdminApi.updateUser(adminLoginToken, {
+      const updateResp = await TransferApi.updateTransfer(adminLoginToken, {
         id: row.id,
         status,
       })
@@ -254,33 +186,6 @@ export default defineComponent({
           type: 'success',
           duration: 2000
         });
-      }
-    },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.dialogStatus = 'update';
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate();
-      });
-    },
-    async updateData() {
-      const isValid = await this.$refs['dataForm'].validate()
-      if (isValid) {
-        const adminLoginToken = store.admin().adminLoginToken
-        const tempData = Object.assign({}, this.temp);
-        const updateResp = await AdminApi.updateUser(adminLoginToken, tempData)
-        if (updateResp.data.code === 10000) {
-          const index = this.list.findIndex(v => v.id === this.temp.id);
-          this.list.splice(index, 1, this.temp);
-          this.dialogFormVisible = false;
-          ElNotification({
-            title: 'Success',
-            message: '更新成功',
-            type: 'success',
-            duration: 2000
-          });
-        }
       }
     },
   }

@@ -1,4 +1,7 @@
 export function formatIdDisplay(id) {
+    if (!id) {
+        return ''
+    }
     return `JH${id.toString().padStart(4, '0')}`;
 }
 
@@ -43,4 +46,15 @@ export function formatOrderIdDisplay(id, created_at) {
 
     // 返回格式化后的订单 ID
     return `${year}${month}${day}_${orderId}`;
+}
+
+export function formatImageUrl(imagePath) {
+    return `${import.meta.env.VITE_CDN_ENDPOINT}${imagePath}`
+}
+
+export function getAdjustWidth(baseWidth) {
+  const { body } = document;
+  const rect = body.getBoundingClientRect();
+  
+  return baseWidth / 430 * rect.width;
 }

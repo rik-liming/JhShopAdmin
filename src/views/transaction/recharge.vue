@@ -48,7 +48,13 @@
       </el-table-column>
       <el-table-column label="充值截图" width="130px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.recharge_images }}</span>
+          <!-- <span>{{ formatImageUrl(row.recharge_images) }}</span> -->
+          <img 
+            :src="row?.recharge_images ? formatImageUrl(row.recharge_images) : ''"
+            alt="payment" 
+            class="tw-w-12 tw-h-16 tw-mx-auto cursor-pointer"
+            @click="openPreview(formatImageUrl(row?.recharge_images))"
+          />
         </template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" width="100" align="center">
@@ -77,6 +83,19 @@
 
     <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
 
+    <el-dialog
+      v-model="isPreviewOpen"
+      align-center
+	    style="width: 380px; height: 540px; background-color: transparent; box-shadow: none;"
+    >
+      <img
+        :src="currentImageUrl"
+        alt="Preview"
+        class="tw-w-full tw-max-h-[540px] tw-object-contain"
+        @click.stop
+      />
+    </el-dialog>
+
   </div>
 </template>
 
@@ -89,7 +108,7 @@ import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
 import { ElMessage } from 'element-plus';
-import { formatIdDisplay } from '@/utils/tool'
+import { formatIdDisplay, formatImageUrl } from '@/utils/tool'
 
 const statusMap = {
   '0': '待审核',
@@ -122,6 +141,8 @@ export default defineComponent({
       isRequesting: false,
       statusMap,
       statusFilterMap,
+      isPreviewOpen: false,
+      currentImageUrl: false,
     };
   },
   created() {
@@ -130,6 +151,7 @@ export default defineComponent({
   methods: {
     parseTime,
     formatIdDisplay,
+    formatImageUrl,
     async getList() {
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
@@ -175,6 +197,10 @@ export default defineComponent({
           duration: 2000
         });
       }
+    },
+    openPreview(imageUrl) {
+      this.currentImageUrl = imageUrl;
+      this.isPreviewOpen = true;
     },
   }
 });

@@ -30,12 +30,12 @@
           <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="真实姓名" width="110px" align="center">
+      <!-- <el-table-column label="真实姓名" width="110px" align="center">
         <template v-slot="{row}">
           <span>{{ row.real_time ? row.real_time : '-' }}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="注册邮箱" width="250px" align="center">
+      </el-table-column> -->
+      <el-table-column label="注册邮箱" width="200px" align="center">
         <template v-slot="{row}">
           <span>{{ row.email ? row.email : '-' }}</span>
         </template>
@@ -43,6 +43,27 @@
       <el-table-column label="角色" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="邀请码" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.invite_code ? row.invite_code : '-' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="上下级" width="90px" align="center">
+        <template v-slot="{row}">
+          <span v-if="row.role == 'agent' || row.role == 'platform'" class="link-type" @click="fetchInviteRelation(row)">{{ `查看下级` }}</span>
+          <span>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="资产" width="90px" align="center">
+        <template v-slot="{row}">
+          <span 
+            v-if="row.role === 'platform' || row.role === 'agent' || row.role === 'seller'" 
+            class="link-type" 
+            @click="fetchAccountInfo(row)">{{ `查看资产` }}
+          </span>
+          <span>-</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" width="100" align="center">
@@ -82,9 +103,9 @@
         <el-form-item label="用户名" prop="user_name">
           <el-input v-model="temp.user_name" />
         </el-form-item>
-        <el-form-item label="真实姓名" prop="real_name">
+        <!-- <el-form-item label="真实姓名" prop="real_name">
           <el-input v-model="temp.real_name" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="注册邮箱" prop="email">
           <el-input v-model="temp.email" disabled />
         </el-form-item>
@@ -285,6 +306,28 @@ export default defineComponent({
         }
       }
     },
+    async fetchInviteRelation(row) {
+      alert("暂无数据");
+      // const adminLoginToken = store.admin().adminLoginToken
+      // const updateResp = await UserApi.updateUser(adminLoginToken, {
+      //   id: row.id,
+      //   status,
+      // })
+      // if (updateResp.data.code === 10000) {
+      //   row.status = status;
+      //   const index = this.list.findIndex(v => v.id === row.id);
+      //   this.list.splice(index, 1, row);
+      //   ElNotification({
+      //     title: 'Success',
+      //     message: '更新成功',
+      //     type: 'success',
+      //     duration: 2000
+      //   });
+      // }
+    },
+    async fetchAccountInfo(row) {
+      alert("暂无数据");
+    }
   }
 });
 </script>
