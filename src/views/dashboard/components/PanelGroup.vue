@@ -1,54 +1,107 @@
 <template>
   <el-row :gutter="40" class="panel-group">
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
+    <el-col 
+      :xs="12" 
+      :sm="12" 
+      :lg="8" 
+      class="card-panel-col"
+    >
+      <div 
+        class="card-panel" 
+        @click="handleSetLineChartData('completed')"
+        :class="{ 'is-active': selectedType === 'completed' }"
+      >
         <div class="card-panel-icon-wrapper icon-people">
-          <svg-icon icon-class="peoples" class-name="card-panel-icon" />
+          <svg-icon icon-class="money" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            New Visits
+            订单已完成
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" />
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总数: </span>
+            <count-to :start-val="0" :end-val="summary.completed.count" :duration="2000" class="card-panel-num" />
+            <span class="tw-text-[14px]"> 笔</span>
+          </div>
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总额: </span>
+            <count-to :start-val="0" :end-val="summary.completed.amount" :duration="2000" class="card-panel-num" />
+            <span class="tw-text-[14px]"> USDT</span>
+          </div>
         </div>
       </div>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('messages')">
+    <el-col 
+      :xs="12" 
+      :sm="12" 
+      :lg="8" 
+      class="card-panel-col"
+    >
+      <div 
+        class="card-panel" 
+        @click="handleSetLineChartData('ongoing')"
+        :class="{ 'is-active': selectedType === 'ongoing' }"
+      >
         <div class="card-panel-icon-wrapper icon-message">
-          <svg-icon icon-class="message" class-name="card-panel-icon" />
+          <svg-icon icon-class="money" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Messages
+            订单交易中
           </div>
-          <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" />
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总数: </span>
+            <count-to :start-val="0" :end-val="summary.ongoing.count" :duration="2000" class="card-panel-num" />
+            <span class="tw-text-[14px]"> 笔</span>
+          </div>
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总额: </span>
+            <count-to 
+              :start-val="0" 
+              :end-val="summary.ongoing.amount" 
+              :duration="2000"
+              :decimals="2"
+              :formatter="val => Number(val).toFixed(2)"
+              class="card-panel-num" 
+            />
+            <span class="tw-text-[14px]"> USDT</span>
+          </div>
         </div>
       </div>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('purchases')">
+    <el-col 
+      :xs="12" 
+      :sm="12" 
+      :lg="8" 
+      class="card-panel-col"
+    >
+      <div 
+        class="card-panel" 
+        @click="handleSetLineChartData('hanged')"
+        :class="{ 'is-active': selectedType === 'hanged' }"
+      >
         <div class="card-panel-icon-wrapper icon-money">
           <svg-icon icon-class="money" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Purchases
+            订单挂起
           </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" />
-        </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('shoppings')">
-        <div class="card-panel-icon-wrapper icon-shopping">
-          <svg-icon icon-class="shopping" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">
-            Shoppings
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总数: </span>
+            <count-to :start-val="0" :end-val="summary.hanged.count" :duration="2000" class="card-panel-num" />
+            <span class="tw-text-[14px]"> 笔</span>
           </div>
-          <count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num" />
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总额: </span>
+            <count-to 
+              :start-val="0" 
+              :end-val="summary.hanged.amount" 
+              :duration="2000" 
+              class="card-panel-num" 
+            />
+            <span class="tw-text-[14px]"> USDT</span>
+          </div>
         </div>
       </div>
     </el-col>
@@ -63,9 +116,25 @@ export default defineComponent({
   components: {
     CountTo
   },
+  props: {
+    summary: {
+      type: Object,
+      default: () => ({
+        completed: { count: 0, amount: 0, chart: [] },
+        ongoing: { count: 0, amount: 0, chart: [] },
+        hanged: { count: 0, amount: 0, chart: [] },
+      })
+    }
+  },
+  data() {
+    return {
+      selectedType: 'completed',
+    }
+  },
   methods: {
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type);
+      this.selectedType = type
     }
   }
 });
@@ -81,7 +150,7 @@ export default defineComponent({
 
   .card-panel {
     display: flex;
-    height: 108px;
+    height: 128px;
     cursor: pointer;
     font-size: 12px;
     position: relative;
@@ -91,7 +160,8 @@ export default defineComponent({
     box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
     border-color: rgba(0, 0, 0, .05);
 
-    &:hover {
+    &:hover,
+    &.is-active {
       .card-panel-icon-wrapper {
         color: #fff;
       }
@@ -157,6 +227,11 @@ export default defineComponent({
 
       .card-panel-num {
         font-size: 20px;
+        color: red;
+      }
+
+      .card-panel-hint {
+        font-size: 18px;
       }
     }
   }

@@ -38,8 +38,13 @@
       </div>
     </el-form>
 
-    <el-dialog v-model="needBindOtp" title="验证码校验" class="custom-dialog">
-      <div>请使用谷歌验证器，扫描二维码绑定后，输入验证码</div>
+    <el-dialog 
+      v-model="needBindOtp" 
+      align-center
+      class="custom-dialog !tw-rounded-xl"
+    >
+      <div class="tw-text-[20px] tw-font-bold tw-font-pingfang tw-mb-4">绑定验证器</div>
+      <div class="tw-text-[16px] tw-font-pingfang tw-text-center">首次登陆，请使用Google Authenticator扫描二维码，完成账号绑定</div>
       <QrcodeVue :value="qrCodeUrl" :size="200" class="qrcode" />
 
       <v-sheet color="surface">
@@ -58,10 +63,20 @@
         width="70%"
         @click="submitOtp"
       ></v-btn>
+
+      <div class="tw-text-[16px] tw-font-pingfang tw-text-center">如果验证器遗失，请联系客服重置。</div>
     </el-dialog>
 
-    <el-dialog v-model="needVerifyOtp" title="验证码校验" class="custom-dialog">
-      <div class="verifyOtpHint">请输入谷歌验证器生成的验证码</div>
+    <el-dialog v-model="needVerifyOtp" class="custom-dialog" align-center>
+      <div class="tw-text-[20px] tw-font-bold tw-font-pingfang tw-mb-4">安全验证</div>
+      <div class="tw-text-[16px] tw-font-pingfangsb tw-text-center">请打开Google Authenticator应用中显示的6位数字</div>
+      <v-chip
+        class="my-2"
+        color="teal"
+        label
+      >
+        {{ `Jhshop [${loginForm.user_name}]` }}
+      </v-chip>
 
       <v-sheet color="surface">
         <v-otp-input
@@ -79,6 +94,8 @@
         width="70%"
         @click="submitOtp"
       ></v-btn>
+
+      <div class="tw-text-[16px] tw-font-pingfang tw-text-center">如果验证器遗失，请联系客服重置。</div>
     </el-dialog>
   </div>
 </template>
@@ -338,6 +355,7 @@ $light_gray: #eee;
 
   :deep(div.el-dialog.custom-dialog) {
     width: 80% !important;
+    max-width: 480px !important;
     --el-dialog-width: 80% !important;
     display: flex !important;
     flex-direction: column !important;

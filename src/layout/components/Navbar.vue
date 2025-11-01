@@ -12,7 +12,7 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img src="`@/assets/profile_icon.png`" class="user-avatar">
+          <img src="@/assets/profile_icon.png" class="user-avatar">
         </div>
       </el-dropdown>
     </div>

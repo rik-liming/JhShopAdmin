@@ -208,6 +208,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '财务变动', 
           affix: true,
           needIndent: true,
+          hidden: true,
         }
       },
       {
@@ -285,27 +286,27 @@ export const asyncRoutes:RouteRecordRaw[] = [
       },
     ]
   },
-  {
-    path: '/reward',
-    name: 'Reward',
-    meta: { 
-      roles: ['admin', 'superAdmin'],
-    },
-    redirect: '/reward/index',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/reward/index.vue'),
-        name: 'RewardIndex',
-        meta: { 
-          title: '奖励管理', 
-          affix: true,
-          icon: markRaw(IconReward),
-        }
-      },
-    ]
-  },
+  // {
+  //   path: '/reward',
+  //   name: 'Reward',
+  //   meta: { 
+  //     roles: ['admin', 'superAdmin'],
+  //   },
+  //   redirect: '/reward/index',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       component: () => import('@/views/reward/index.vue'),
+  //       name: 'RewardIndex',
+  //       meta: { 
+  //         title: '奖励管理', 
+  //         affix: true,
+  //         icon: markRaw(IconReward),
+  //       }
+  //     },
+  //   ]
+  // },
 
   // logout
   {

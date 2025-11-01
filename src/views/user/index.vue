@@ -25,11 +25,11 @@
           <span>{{ formatIdDisplay(row.id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名" width="150px" align="center">
+      <!-- <el-table-column label="用户名" width="150px" align="center">
         <template v-slot="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <!-- <el-table-column label="真实姓名" width="110px" align="center">
         <template v-slot="{row}">
           <span>{{ row.real_time ? row.real_time : '-' }}</span>
@@ -151,20 +151,20 @@ import { formatIdDisplay } from '@/utils/tool'
 const roleTypeOptions = [
   { key: 'platform', display_name: '平台总代理' },
   { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商家' },
+  { key: 'seller', display_name: '商户' },
   { key: 'buyer', display_name: '买家' },
   { key: 'autoBuyer', display_name: '自动化买家' },
 ];
 const canSelectRoleTypeOptions = [
   { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商家' },
+  { key: 'seller', display_name: '商户' },
   { key: 'buyer', display_name: '买家' },
   { key: 'autoBuyer', display_name: '自动化买家' },
 ];
 const roleTypeMap = {
   'platform': '平台总代理',
   'agent': '代理',
-  'seller': '商家',
+  'seller': '商户',
   'buyer': '买家',
   'autoBuyer': '自动化买家',
   'default': '默认角色',

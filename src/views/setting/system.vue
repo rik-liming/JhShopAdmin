@@ -1,288 +1,190 @@
 <template>
-  <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="listQuery.keyword" placeholder="名字" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
-      <el-select v-model="listQuery.role" placeholder="角色" clearable class="filter-item" style="width: 130px; margin-right: 8px;">
-        <el-option v-for="item in roleTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
-        <span v-waves>搜索</span>
-      </el-button>
-    </div>
+  
+  <el-form :model="form" ref="formRef" label-width="160px" label-position="left">
+    <el-row>
+      <el-col :lg="8">
+        <!-- 基本信息 -->
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[320px]">
+          <el-form-item label="广告文字">
+            <el-input type="textarea" v-model="form.advertisement_text" :rows="2" />
+          </el-form-item>
 
-    <el-table
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%;"
-    >
-      <el-table-column label="ID" prop="id" align="center" width="200" >
-        <template v-slot="{row}">
-          <span>{{ formatIdDisplay(row.id) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户名" width="150px" align="center">
-        <template v-slot="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="真实姓名" width="110px" align="center">
-        <template v-slot="{row}">
-          <span>{{ row.real_time ? row.real_time : '-' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="注册邮箱" width="250px" align="center">
-        <template v-slot="{row}">
-          <span>{{ row.email ? row.email : '-' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="角色" width="150px" align="center">
-        <template v-slot="{row}">
-          <span>{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" class-name="status-col" width="100" align="center">
-        <template v-slot="{row}">
-          <el-tag :type="statusFilterMap[row.status]">
-            {{ statusMap[row.status] }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="注册日期" width="150px" align="center">
-        <template v-slot="{row}">
-          <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
-        <template v-slot="{row, $index}">
-          <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
-            启用
-          </el-button>
-          <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            禁用
-          </el-button>
-          <el-button type="primary" size="small" @click="handleUpdate(row)">
-            编辑
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+          <el-form-item label="平台收款地址">
+            <el-input v-model="form.payment_address" placeholder="请输入收款地址地址" />
+          </el-form-item>
 
-    <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
+          <!-- <el-form-item label="支付二维码">
+            <el-input v-model="form.payment_qr_code" placeholder="请输入支付二维码 URL" />
+          </el-form-item> -->
 
-    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="ID" prop="id">
-          <el-input v-model="temp.id" disabled />
+          <el-form-item label="转账手续费 (USDT)">
+            <el-input-number v-model="form.transfer_fee" :min="0" :step="0.01" />
+          </el-form-item>
+
+          <el-form-item label="提现手续费 (USDT)">
+            <el-input-number v-model="form.withdrawl_fee" :min="0" :step="0.01" />
+          </el-form-item>
+        </el-card>
+      </el-col>
+
+      <el-col :lg="8">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[320px]">
+          
+          <el-form-item label="平台汇率">
+            <el-input-number v-model="form.exchange_rate_platform" :min="0" :step="0.01" />
+          </el-form-item>
+
+          <el-form-item label="支付宝汇率">
+            <el-input-number v-model="form.exchange_rate_alipay" :min="0" :step="0.01" />
+          </el-form-item>
+
+          <el-form-item label="微信汇率">
+            <el-input-number v-model="form.exchange_rate_wechat" :min="0" :step="0.01" />
+          </el-form-item>
+
+          <el-form-item label="银行卡汇率">
+            <el-input-number v-model="form.exchange_rate_bank" :min="0" :step="0.01" />
+          </el-form-item>
+        </el-card>
+      </el-col>
+
+      <el-col :lg="8">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[320px]">
+          <!-- 优化后的远程订单配置 -->
+          <el-form-item label="远程下单开放市场">
+            <el-checkbox-group v-model="remoteConfig.openMarkets">
+              <el-checkbox label="alipay">支付宝</el-checkbox>
+              <el-checkbox label="wechat">微信</el-checkbox>
+              <el-checkbox label="bank">银行卡</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+
+          <el-form-item label="远程下单开放额度">
+            <el-checkbox-group v-model="remoteConfig.amountOptions">
+              <el-checkbox v-for="amount in amountOptionsList" :key="amount" :label="amount">
+                {{ amount }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row class="tw-mt-10">
+      <el-col :lg="8">
+      </el-col>
+      <el-col :lg="8">
+        <el-form-item>
+          <el-button type="primary" @click="submit">保存配置</el-button>
+          <el-button @click="reset">重置</el-button>
         </el-form-item>
-        <el-form-item label="用户名" prop="user_name">
-          <el-input v-model="temp.user_name" />
-        </el-form-item>
-        <el-form-item label="真实姓名" prop="real_name">
-          <el-input v-model="temp.real_name" />
-        </el-form-item>
-        <el-form-item label="注册邮箱" prop="email">
-          <el-input v-model="temp.email" disabled />
-        </el-form-item>
-        <el-form-item label="角色" prop="role" v-if="temp.role !== 'platform'">
-          <el-select v-model="temp.role" class="filter-item" placeholder="请选择角色">
-            <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="注册时间" prop="created_at">
-          <el-date-picker v-model="temp.created_at" type="datetime" disabled />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select" disabled>
-            <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">
-            取消
-          </el-button>
-          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-            确认
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-  </div>
+      </el-col>
+      <el-col :lg="8">
+      </el-col>
+    </el-row>
+  </el-form>
 </template>
 
-<script>
-import { defineComponent, markRaw } from 'vue';
-import { Search, Edit } from '@element-plus/icons-vue';
-import * as AdminApi from '@/api/admin';
-import store from '@/store';
-import waves from '@/directive/waves'; // waves directive
-import { parseTime } from '@/utils';
-import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
+<script setup lang="ts">
+import { reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { formatIdDisplay } from '@/utils/tool'
+import * as ConfigApi from '@/api/config'
+import store from '@/store';
 
-const roleTypeOptions = [
-  { key: 'platform', display_name: '平台总代理' },
-  { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商家' },
-  { key: 'buyer', display_name: '买家' },
-  { key: 'autoBuyer', display_name: '自动化买家' },
-];
-const canSelectRoleTypeOptions = [
-  { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商家' },
-  { key: 'buyer', display_name: '买家' },
-  { key: 'autoBuyer', display_name: '自动化买家' },
-];
-const roleTypeMap = {
-  'platform': '平台总代理',
-  'agent': '代理',
-  'seller': '商家',
-  'buyer': '买家',
-  'autoBuyer': '自动化买家',
-  'default': '默认角色',
+interface PlatformConfig {
+  payment_address: string;
+  payment_qr_code: string;
+  transfer_fee: number;
+  withdrawl_fee: number;
+  exchange_rate_platform: number;
+  exchange_rate_alipay: number;
+  exchange_rate_wechat: number;
+  exchange_rate_bank: number;
+  advertisement_text: string;
+  remote_order_config: {
+    openMarkets: string[];
+    amountOptions: number[];
+  };
 }
-const statusOptions = [
-  { key: 0, display_name: '禁用' },
-  { key: 1, display_name: '正常' },
-];
-const statusMap = {
-  '0': '已禁用',
-  '1': '正常',
-}
-const statusFilterMap = {
-  '0': 'danger',
-  '1': 'success',
-};
 
-export default defineComponent({
-  name: 'UserPage',
-  components: { Pagination },
-  directives: { waves },
-  data() {
-    return {
-      iconSearch: markRaw(Search),
-      iconEdit: markRaw(Edit),
-      tableKey: 0,
-      list: null,
-      total: 0,
-      listLoading: true,
-      listQuery: {
-        page: 1,
-        page_size: 20,
-        keyword: '',
-        role: '',
-      },
-      isRequesting: false,
-      roleTypeOptions,
-      roleTypeMap,
-      canSelectRoleTypeOptions,
-      statusOptions,
-      statusMap,
-      statusFilterMap,
-      temp: {
-        id: undefined,
-        user_name: '',
-        real_name: '',
-        email: '',
-        role: '',
-        status: 1,
-        created_at: undefined
-      },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: '编辑',
-        create: '新建'
-      },
-      rules: {
-      },
-    };
-  },
-  created() {
-    this.getList();
-  },
-  methods: {
-    parseTime,
-    formatIdDisplay,
-    async getList() {
-      this.listLoading = true;
-      const adminLoginToken = store.admin().adminLoginToken
-      try {
-        const listResp = await AdminApi.fetchUserList(adminLoginToken, this.listQuery)
-        if (listResp.data.code === 10000) {
-          this.list = listResp.data.data.users;
-          this.total = listResp.data.data.total;
-        } else {
-          ElMessage.error(listResp.data.msg)
-        } 
-      } catch (error) {
-        console.log(error)
-      } finally {
-        this.listLoading = false
-      }
-    },
-    async handlePageChange() {
-      if (this.isRequesting) return; // 如果正在请求，则不重复请求
+const adminStore = store.admin()
 
-      this.isRequesting = true; // 开始请求
-      await this.getList();
-      this.isRequesting = false; // 请求完成
-    },
-    handleFilter() {
-      this.listQuery.page = 1;
-      this.getList();
-    },
-    async handleModifyStatus(row, status) {
-      const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await AdminApi.updateUser(adminLoginToken, {
-        id: row.id,
-        status,
-      })
-      if (updateResp.data.code === 10000) {
-        row.status = status;
-        const index = this.list.findIndex(v => v.id === row.id);
-        this.list.splice(index, 1, row);
-        ElNotification({
-          title: 'Success',
-          message: '更新成功',
-          type: 'success',
-          duration: 2000
-        });
-      }
-    },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.dialogStatus = 'update';
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate();
-      });
-    },
-    async updateData() {
-      const isValid = await this.$refs['dataForm'].validate()
-      if (isValid) {
-        const adminLoginToken = store.admin().adminLoginToken
-        const tempData = Object.assign({}, this.temp);
-        const updateResp = await AdminApi.updateUser(adminLoginToken, tempData)
-        if (updateResp.data.code === 10000) {
-          const index = this.list.findIndex(v => v.id === this.temp.id);
-          this.list.splice(index, 1, this.temp);
-          this.dialogFormVisible = false;
-          ElNotification({
-            title: 'Success',
-            message: '更新成功',
-            type: 'success',
-            duration: 2000
-          });
-        }
-      }
-    },
+// 表单数据
+const formRef = ref();
+const form = reactive<PlatformConfig>({
+  payment_address: '',
+  payment_qr_code: '',
+  transfer_fee: 0,
+  withdrawl_fee: 0,
+  exchange_rate_platform: 0,
+  exchange_rate_alipay: 0,
+  exchange_rate_wechat: 0,
+  exchange_rate_bank: 0,
+  advertisement_text: '',
+  remote_order_config: {
+    openMarkets: ['alipay', 'wechat', 'bank'],
+    amountOptions: [500, 1000, 2000]
   }
 });
+
+// 远程订单配置单独绑定，便于表单控制
+const remoteConfig = reactive({
+  openMarkets: [...form.remote_order_config.openMarkets],
+  amountOptions: [...form.remote_order_config.amountOptions]
+});
+
+// 可选额度列表
+const amountOptionsList = [500, 1000, 2000];
+
+// 加载配置
+const loadConfig = async () => {
+  try {
+    const res = await ConfigApi.getConfigInfo(adminStore.adminLoginToken);
+    if (res.data.code === 10000) {
+      Object.assign(form, res.data.data.config);
+
+      // 远程订单配置同步
+      remoteConfig.openMarkets = [...form.remote_order_config.openMarkets];
+      remoteConfig.amountOptions = [...form.remote_order_config.amountOptions];
+    }
+  } catch (err) {
+    console.error(err);
+    ElMessage.error('加载配置失败');
+  }
+};
+
+// 提交配置
+const submit = async () => {
+  try {
+    // 更新 form 中的 remote_order_config
+    form.remote_order_config.openMarkets = [...remoteConfig.openMarkets];
+    form.remote_order_config.amountOptions = [...remoteConfig.amountOptions];
+
+    const updateResp = await ConfigApi.updateConfigInfo(adminStore.adminLoginToken, form);
+    if (updateResp.data.code === 10000) {
+      ElMessage.success('配置已保存');
+    }
+  } catch (err) {
+    console.error(err);
+    ElMessage.error('保存失败');
+  }
+};
+
+// 重置
+const reset = () => loadConfig();
+
+onMounted(() => {
+  loadConfig();
+});
 </script>
+
+<style scoped>
+/* 左对齐表单标签 */
+.el-form {
+  text-align: left;
+}
+
+.el-form-item__label {
+  text-align: left !important;
+}
+</style>

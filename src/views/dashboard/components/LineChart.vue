@@ -62,10 +62,14 @@ export default defineComponent({
       this.chart = shallowRef(echarts.init(this.$el, macaronsTheme));
       this.setOptions(this.chartData);
     },
-    setOptions({ expectedData, actualData } = {}) {
+    setOptions(data) {
       this.chart.setOption({
         xAxis: {
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: ['0', '1', '2', '3', '4', '5', 
+            '6', '7', '8','9', '10', '11', '12',
+            '13', '14', '15','16', '17', '18', '19',
+            '20', '21', '22', '23'
+            ],
           boundaryGap: false,
           axisTick: {
             show: false
@@ -91,10 +95,10 @@ export default defineComponent({
           }
         },
         legend: {
-          data: ['expected', 'actual']
+          data: ['订单金额走势']
         },
         series: [{
-          name: 'expected',
+          name: '订单金额走势',
           itemStyle: {
             color: '#FF005A'
           },
@@ -104,28 +108,11 @@ export default defineComponent({
           },
           smooth: true,
           type: 'line',
-          data: expectedData,
+          data: data,
           animationDuration: 2800,
           animationEasing: 'cubicInOut'
         },
-        {
-          name: 'actual',
-          smooth: true,
-          type: 'line',
-          itemStyle: {
-            color: '#3888fa'
-          },
-          lineStyle: {
-            color: '#3888fa',
-            width: 2
-          },
-          areaStyle: {
-            color: '#f3f8ff'
-          },
-          data: actualData,
-          animationDuration: 2800,
-          animationEasing: 'quadraticOut'
-        }]
+        ]
       });
     }
   }

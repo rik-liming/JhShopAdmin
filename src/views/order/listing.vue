@@ -29,12 +29,17 @@
           <span>{{ row.amount }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="最低购买金额" width="250px" align="center">
+      <el-table-column label="剩余数量" width="250px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.remain_amount }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="最低购买金额" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.min_sale_amount }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="卖场" width="250px" align="center">
+      <el-table-column label="卖场" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ formatPaymentMethod(row.payment_method) }}</span>
         </template>

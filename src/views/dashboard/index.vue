@@ -1,100 +1,76 @@
 <template>
   <div class="dashboard-editor-container">
 
-    <panel-group @handleSetLineChartData="handleSetLineChartData" />
+    <!-- 传入 summary 数据 -->
+    <panel-group :summary="summary" @handleSetLineChartData="handleSetLineChartData" />
 
+    <!-- 折线图部分 -->
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <line-chart :chart-data="lineChartData" />
-    </el-row>
-
-    <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <raddar-chart />
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <pie-chart />
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <bar-chart />
-        </div>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="8">
-      <el-col :xs="{ span: 24 }" :sm="{ span: 24 }" :md="{ span: 24 }" :lg="{ span: 12 }" :xl="{ span: 12 }"
-              style="padding-right:8px;margin-bottom:30px;">
-        <transaction-table />
-      </el-col>
-      <el-col :xs="{ span: 24 }" :sm="{ span: 12 }" :md="{ span: 12 }" :lg="{ span: 6 }" :xl="{ span: 6 }"
-              style="margin-bottom:30px;">
-        <todo-list />
-      </el-col>
-      <el-col :xs="{ span: 24 }" :sm="{ span: 12 }" :md="{ span: 12 }" :lg="{ span: 6 }" :xl="{ span: 6 }"
-              style="margin-bottom:30px;">
-        <box-card />
-      </el-col>
+      <line-chart :chart-data="displayChartData" />
     </el-row>
   </div>
 </template>
 
-<script>
-import PanelGroup from './components/PanelGroup';
-import LineChart from './components/LineChart';
-import RaddarChart from './components/RaddarChart';
-import PieChart from './components/PieChart';
-import BarChart from './components/BarChart';
-import TransactionTable from './components/TransactionTable';
-import TodoList from './components/TodoList';
-import BoxCard from './components/BoxCard';
-import { defineComponent } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue'
+import PanelGroup from './components/PanelGroup'
+import LineChart from './components/LineChart'
+import * as StatApi from '@/api/stat'
+import store from '@/store';
 
-const lineChartData = {
-  newVisitis: {
-    expectedData: [100, 120, 161, 134, 105, 160, 165],
-    actualData: [120, 82, 91, 154, 162, 140, 145]
+const adminStore = store.admin()
+
+const summary = ref({
+  completed: {
+    count: 44,
+    amount: 1475.0,
+    chart: [100, 120, 161, 134, 105, 160, 165, 0, 0, 0, 0, 0, 100, 120, 161, 134, 105, 160, 165, 0, 0, 0, 0, 0]
   },
-  messages: {
-    expectedData: [200, 192, 120, 144, 160, 130, 140],
-    actualData: [180, 160, 151, 106, 145, 150, 130]
+  ongoing: {
+    count: 39,
+    amount: 458.0,
+    chart: [200, 222, 188, 134, 105, 160, 165, 0, 0, 0, 0, 0, 100, 120, 161, 134, 105, 160, 165, 0, 0, 0, 0, 0]
   },
-  purchases: {
-    expectedData: [80, 100, 121, 104, 105, 90, 100],
-    actualData: [120, 90, 100, 138, 142, 130, 130]
-  },
-  shoppings: {
-    expectedData: [130, 140, 141, 142, 145, 150, 160],
-    actualData: [120, 82, 91, 154, 162, 140, 130]
+  hanged: {
+    count: 100,
+    amount: 45448.0,
+    chart: [400, 78, 161, 99, 105, 160, 165, 0, 0, 0, 0, 0, 100, 120, 161, 134, 105, 160, 165, 0, 0, 0, 0, 0]
   }
-};
+})
 
-export default defineComponent({
-  name: 'DashboardAdmin',
-  components: {
-    PanelGroup,
-    LineChart,
-    RaddarChart,
-    PieChart,
-    BarChart,
-    TransactionTable,
-    TodoList,
-    BoxCard
-  },
-  data() {
-    return {
-      lineChartData: lineChartData.newVisitis
-    };
-  },
-  methods: {
-    handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type];
+// 折线图显示的数据（默认全 0）
+const displayChartData = ref(
+  Array(24).fill(0)
+)
+
+// ==========================
+// 方法定义
+// ==========================
+
+// 切换折线图数据
+const handleSetLineChartData = (type) => {
+  displayChartData.value = summary.value[type]?.chart || Array(24).fill(0)
+}
+
+// 异步获取统计数据
+const fetchStatData = async () => {
+  try {
+    const statResp = await StatApi.getDashboardSummary(adminStore?.adminLoginToken)
+    if (statResp.data.code === 10000) {
+      summary.value = statResp.data.data.summary
+
+      // 默认显示第一个状态的图表
+      handleSetLineChartData('completed')
     }
+  } catch (err) {
+    console.error('获取统计数据失败:', err)
   }
-});
+}
+
+// 页面加载时请求数据
+onMounted(() => {
+  fetchStatData()
+})
 </script>
 
 <style lang="scss" scoped>
