@@ -75,7 +75,7 @@
         color="teal"
         label
       >
-        {{ `Jhshop [${loginForm.user_name}]` }}
+        {{ `JhAdmin [${loginForm.user_name}]` }}
       </v-chip>
 
       <v-sheet color="surface">

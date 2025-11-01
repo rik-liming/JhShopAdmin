@@ -56,7 +56,7 @@ export default defineStore({
     },
     generateRoutes(roles: string[]) {
       let accessedRoutes;
-      if (roles.includes('admin')) {
+      if (roles.includes('superAdmin')) {
         accessedRoutes = asyncRoutes || [];
       } else {
         accessedRoutes = filterAsyncRoutes(asyncRoutes, roles);

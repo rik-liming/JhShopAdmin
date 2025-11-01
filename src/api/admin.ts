@@ -21,3 +21,33 @@ export async function logout(adminLoginToken) {
     })
     return response
 }
+
+// request admin info
+export async function getAdminInfo(adminLoginToken) {
+    const response = await requestBase.get('/api/admin/info', {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// update admin info
+export async function updateAdminInfo(adminLoginToken, data) {
+    const response = await requestBase.put('/api/admin', data, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// regen secret
+export async function regenSecret(adminLoginToken) {
+    const response = await requestBase.post('/api/admin/secret/regen', {}, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

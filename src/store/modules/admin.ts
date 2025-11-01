@@ -5,6 +5,10 @@ import permissionStore from './permission';
 import * as AdminApi from '@/api/admin'
 import { useStorage } from '@vueuse/core'
 
+// 每个浏览器 tab 都有独立的 ID
+const tabId = sessionStorage.getItem('tabId') || crypto.randomUUID();
+sessionStorage.setItem('tabId', tabId);
+
 export interface IAdmin {
   id: string
   userName: string
@@ -18,8 +22,8 @@ export default defineStore({
   id: 'admin',
   state: () => ({
     // 分开存储
-    adminLoginToken: useStorage('adminLoginToken', ''),
-    admin: useStorage<IAdmin>('admin', {} as IAdmin),
+    adminLoginToken: useStorage(`adminLoginToken_${tabId}`, ''),
+    admin: useStorage<IAdmin>(`admin_${tabId}`, {} as IAdmin),
   }),
   actions: {
     // user verify otp and login

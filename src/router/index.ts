@@ -125,6 +125,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '系统配置', 
           affix: true,
           needIndent: true,
+          roles: ['superAdmin'],
         }
       },
       {
@@ -132,7 +133,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         component: () => import('@/views/setting/person.vue'),
         name: 'SettingPerson',
         meta: { 
-          title: '个人配置', 
+          title: '个人资料', 
           affix: true,
           needIndent: true,
         }
