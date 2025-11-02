@@ -15,6 +15,7 @@ import {
   Avatar as IconSettingPerson,
   Stamp as IconPermission,
   Present as IconReward,
+  DataAnalysis as IconReport,
 } from '@element-plus/icons-vue';
 import store from '@/store';
 
@@ -144,7 +145,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
     path: '/permission',
     name: 'Permission',
     meta: { 
-      roles: ['admin', 'superAdmin'],
+      roles: ['superAdmin'],
       title: '权限管理', 
       icon: markRaw(IconPermission),
       alwaysShow: true, // will always show the root menu
@@ -281,6 +282,49 @@ export const asyncRoutes:RouteRecordRaw[] = [
         name: 'OrderAuto',
         meta: { 
           title: '自动化订单', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+    ]
+  },
+  {
+    path: '/report',
+    name: 'Report',
+    meta: { 
+      alwaysShow: true, // will always show the root menu
+      roles: ['admin', 'superAdmin'],
+      title: '报表管理', 
+      icon: markRaw(IconReport),
+    },
+    component: Layout,
+    children: [
+      {
+        path: 'agent',
+        component: () => import('@/views/report/agent.vue'),
+        name: 'AgentReport',
+        meta: { 
+          title: '代理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+      {
+        path: 'auto_buyer',
+        component: () => import('@/views/report/autoBuyer.vue'),
+        name: 'AutoBuyerReport',
+        meta: { 
+          title: '自动化买家', 
+          affix: true,
+          needIndent: true,
+        }
+      },
+      {
+        path: 'buyer',
+        component: () => import('@/views/report/buyer.vue'),
+        name: 'BuyerReport',
+        meta: { 
+          title: '系统买家', 
           affix: true,
           needIndent: true,
         }

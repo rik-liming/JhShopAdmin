@@ -60,40 +60,11 @@
           </el-form-item>
 
           <el-form-item label="远程下单开放额度">
-            <div class="tw-flex tw-flex-col tw-gap-2">
-              <div
-                v-for="(amount, index) in remoteConfig.amountOptions"
-                :key="index"
-                class="tw-flex tw-items-center tw-gap-2"
-              >
-                <el-input
-                  v-model.number="remoteConfig.amountOptions[index]"
-                  type="number"
-                  placeholder="请输入金额"
-                  min="1"
-                  @input="handleAmountChange(index)"
-                  class="tw-w-[150px]"
-                />
-                <el-button
-                  v-if="remoteConfig.amountOptions.length > 1"
-                  type="danger"
-                  link
-                  @click="removeAmount(index)"
-                >
-                  删除
-                </el-button>
-              </div>
-
-              <!-- 添加按钮 -->
-              <el-button
-                v-if="remoteConfig.amountOptions.length < 3"
-                type="primary"
-                link
-                @click="addAmount"
-              >
-                + 添加额度
-              </el-button>
-            </div>
+            <el-checkbox-group v-model="remoteConfig.amountOptions">
+              <el-checkbox v-for="amount in amountOptionsList" :key="amount" :label="amount">
+                {{ amount }}
+              </el-checkbox>
+            </el-checkbox-group>
           </el-form-item>
         </el-card>
       </el-col>
@@ -164,22 +135,6 @@ const remoteConfig = reactive({
 
 // 可选额度列表
 const amountOptionsList = [500, 1000, 2000];
-
-const addAmount = () => {
-  if (remoteConfig.amountOptions.length < 3) {
-    remoteConfig.amountOptions.push(0);
-  }
-};
-
-const removeAmount = (index: number) => {
-  remoteConfig.amountOptions.splice(index, 1);
-};
-
-// 限制金额必须为正整数
-const handleAmountChange = (index: number) => {
-  const val = remoteConfig.amountOptions[index];
-  if (val < 0) remoteConfig.amountOptions[index] = 0;
-};
 
 // 加载配置
 const loadConfig = async () => {
