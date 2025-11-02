@@ -59,7 +59,7 @@
             </el-checkbox-group>
           </el-form-item>
 
-          <el-form-item label="远程下单开放额度">
+          <el-form-item label="远程下单开放额度" class="tw-font-bold">
             <div class="tw-flex tw-flex-col tw-gap-2">
               <div
                 v-for="(amount, index) in remoteConfig.amountOptions"

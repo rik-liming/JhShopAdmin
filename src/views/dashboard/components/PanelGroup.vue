@@ -25,7 +25,14 @@
           </div>
           <div>
             <span class="tw-text-[16px] tw-font-normal">总额: </span>
-            <count-to :start-val="0" :end-val="summary.completed.amount" :duration="2000" class="card-panel-num" />
+            <count-to 
+              :start-val="0" 
+              :end-val="summary.completed.amount" 
+              :duration="2000"
+              :decimals="2"
+              :formatter="val => Number(val).toFixed(2)"
+              class="card-panel-num" 
+            />
             <span class="tw-text-[14px]"> USDT</span>
           </div>
         </div>
@@ -97,7 +104,9 @@
             <count-to 
               :start-val="0" 
               :end-val="summary.hanged.amount" 
-              :duration="2000" 
+              :duration="2000"
+              :decimals="2"
+              :formatter="val => Number(val).toFixed(2)"
               class="card-panel-num" 
             />
             <span class="tw-text-[14px]"> USDT</span>
