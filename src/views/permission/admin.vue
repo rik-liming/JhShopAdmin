@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.keyword" placeholder="名字" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
+      <el-input v-model="listQuery.user_name" clearable placeholder="用户名" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
       <el-select v-model="listQuery.role" placeholder="角色" clearable class="filter-item" style="width: 130px; margin-right: 8px;">
         <el-option v-for="item in roleTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select>
@@ -21,22 +21,12 @@
     >
       <el-table-column label="ID" prop="id" align="center" width="200" >
         <template v-slot="{row}">
-          <span>{{ formatIdDisplay(row.id) }}</span>
+          <span>{{ row.id }}</span>
         </template>
       </el-table-column>
       <el-table-column label="用户名" width="150px" align="center">
         <template v-slot="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="真实姓名" width="110px" align="center">
-        <template v-slot="{row}">
-          <span>{{ row.real_time ? row.real_time : '-' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="注册邮箱" width="250px" align="center">
-        <template v-slot="{row}">
-          <span>{{ row.email ? row.email : '-' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="角色" width="150px" align="center">
@@ -81,9 +71,9 @@
         <el-form-item label="用户名" prop="user_name">
           <el-input v-model="temp.user_name" />
         </el-form-item>
-        <el-form-item label="真实姓名" prop="real_name">
+        <!-- <el-form-item label="真实姓名" prop="real_name">
           <el-input v-model="temp.real_name" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="注册邮箱" prop="email">
           <el-input v-model="temp.email" disabled />
         </el-form-item>
@@ -127,25 +117,16 @@ import { ElMessage } from 'element-plus';
 import { formatIdDisplay } from '@/utils/tool'
 
 const roleTypeOptions = [
-  { key: 'platform', display_name: '平台总代理' },
-  { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商户' },
-  { key: 'buyer', display_name: '买家' },
-  { key: 'autoBuyer', display_name: '自动化买家' },
+  { key: 'admin', display_name: '管理员' },
+  { key: 'superAdmin', display_name: '超级管理员' },
 ];
 const canSelectRoleTypeOptions = [
-  { key: 'agent', display_name: '代理' },
-  { key: 'seller', display_name: '商户' },
-  { key: 'buyer', display_name: '买家' },
-  { key: 'autoBuyer', display_name: '自动化买家' },
+  { key: 'admin', display_name: '管理员' },
+  { key: 'superAdmin', display_name: '超级管理员' },
 ];
 const roleTypeMap = {
-  'platform': '平台总代理',
-  'agent': '代理',
-  'seller': '商户',
-  'buyer': '买家',
-  'autoBuyer': '自动化买家',
-  'default': '默认角色',
+  'admin': '管理员',
+  'superAdmin': '超级管理员',
 }
 const statusOptions = [
   { key: 0, display_name: '禁用' },
@@ -161,7 +142,7 @@ const statusFilterMap = {
 };
 
 export default defineComponent({
-  name: 'UserPage',
+  name: 'AdminPage',
   components: { Pagination },
   directives: { waves },
   data() {
@@ -175,7 +156,7 @@ export default defineComponent({
       listQuery: {
         page: 1,
         page_size: 20,
-        keyword: '',
+        user_name: '',
         role: '',
       },
       isRequesting: false,
@@ -188,8 +169,6 @@ export default defineComponent({
       temp: {
         id: undefined,
         user_name: '',
-        real_name: '',
-        email: '',
         role: '',
         status: 1,
         created_at: undefined
@@ -214,9 +193,9 @@ export default defineComponent({
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
       try {
-        const listResp = await AdminApi.fetchUserList(adminLoginToken, this.listQuery)
+        const listResp = await AdminApi.fetchAdminList(adminLoginToken, this.listQuery)
         if (listResp.data.code === 10000) {
-          this.list = listResp.data.data.users;
+          this.list = listResp.data.data.admins;
           this.total = listResp.data.data.total;
         } else {
           ElMessage.error(listResp.data.msg)
@@ -240,7 +219,7 @@ export default defineComponent({
     },
     async handleModifyStatus(row, status) {
       const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await AdminApi.updateUser(adminLoginToken, {
+      const updateResp = await UserApi.updateUser(adminLoginToken, {
         id: row.id,
         status,
       })
@@ -269,7 +248,7 @@ export default defineComponent({
       if (isValid) {
         const adminLoginToken = store.admin().adminLoginToken
         const tempData = Object.assign({}, this.temp);
-        const updateResp = await AdminApi.updateUser(adminLoginToken, tempData)
+        const updateResp = await UserApi.updateUser(adminLoginToken, tempData)
         if (updateResp.data.code === 10000) {
           const index = this.list.findIndex(v => v.id === this.temp.id);
           this.list.splice(index, 1, this.temp);
@@ -283,6 +262,28 @@ export default defineComponent({
         }
       }
     },
+    async fetchInviteRelation(row) {
+      alert("暂无数据");
+      // const adminLoginToken = store.admin().adminLoginToken
+      // const updateResp = await UserApi.updateUser(adminLoginToken, {
+      //   id: row.id,
+      //   status,
+      // })
+      // if (updateResp.data.code === 10000) {
+      //   row.status = status;
+      //   const index = this.list.findIndex(v => v.id === row.id);
+      //   this.list.splice(index, 1, row);
+      //   ElNotification({
+      //     title: 'Success',
+      //     message: '更新成功',
+      //     type: 'success',
+      //     duration: 2000
+      //   });
+      // }
+    },
+    async fetchAccountInfo(row) {
+      alert("暂无数据");
+    }
   }
 });
 </script>

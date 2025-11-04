@@ -1,5 +1,5 @@
 <template>
-  <div style="padding: 6px 0px;" @click="handleClick">
+  <div style="padding: 0px 0px;" @click="handleClick">
     <img
       src="@/assets/notification_bell.png"
       class="notification-bell"

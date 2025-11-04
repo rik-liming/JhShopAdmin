@@ -1,5 +1,6 @@
 <template>
   <el-config-provider :size="size" :z-index="zIndex" :locale="locale">
+    <GlobalEventListener />
     <router-view />
   </el-config-provider>
 </template>
@@ -9,6 +10,7 @@ import { defineComponent } from 'vue';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
 import { mapState } from 'pinia';
 import store from '@/store';
+import GlobalEventListener from '@/components/GlobalEventListener';
 
 export default defineComponent({
   data() {
@@ -19,7 +21,10 @@ export default defineComponent({
   },
   computed: {
     ...mapState(store.app, ['size'])
-  }
+  },
+  components: {
+    GlobalEventListener,
+  },
 });
 </script>
 

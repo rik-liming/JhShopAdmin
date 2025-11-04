@@ -38,6 +38,7 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
+    GlobalEventListener: typeof import('./src/components/GlobalEventListener/index.vue')['default']
     Hamburger: typeof import('./src/components/Hamburger/index.vue')['default']
     Mallki: typeof import('./src/components/TextHoverEffect/Mallki.vue')['default']
     NotificationBell: typeof import('./src/components/NotificationBell/index.vue')['default']

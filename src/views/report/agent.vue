@@ -11,7 +11,7 @@
       />
       ~
       <el-date-picker
-        v-model="listQuery.startTime"
+        v-model="listQuery.endTime"
         type="date"
         placeholder="选择结束时间"
         format="YYYY-MM-DD"
@@ -20,6 +20,9 @@
       />
       <el-button class="filter-item tw-mt-2" type="primary" :icon="iconSearch" @click="handleFilter">
         <span v-waves>搜索</span>
+      </el-button>
+      <el-button class="filter-item tw-mt-2" type="primary" :icon="iconCalendar" @click="handleCheckToday">
+        <span v-waves>查看当日</span>
       </el-button>
     </div>
 
@@ -63,13 +66,14 @@
 
 <script>
 import { defineComponent, markRaw } from 'vue';
-import { Search, Edit } from '@element-plus/icons-vue';
+import { Search, Edit, Calendar } from '@element-plus/icons-vue';
 import * as ReportApi from '@/api/report';
 import store from '@/store';
 import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import { ElMessage } from 'element-plus';
 import { formatIdDisplay, formatPaymentMethod } from '@/utils/tool'
+import dayjs from 'dayjs';
 
 const paymentMethodOptions = [
   { key: 'alipay', display_name: '支付宝' },
@@ -92,6 +96,7 @@ export default defineComponent({
     return {
       iconSearch: markRaw(Search),
       iconEdit: markRaw(Edit),
+      iconCalendar: markRaw(Calendar),
       tableKey: 0,
       list: null,
       listLoading: true,
@@ -150,6 +155,13 @@ export default defineComponent({
     handleFilter() {
       this.getList();
     },
+    handleCheckToday() {
+      const todayStr = dayjs().format('YYYY-MM-DD');
+      this.listQuery.startTime = todayStr;
+      this.listQuery.endTime = todayStr;
+
+      this.getList();
+    }
   }
 });
 </script>

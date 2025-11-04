@@ -1,4 +1,6 @@
 import requestBase from './base';
+import { pick } from 'lodash';
+import { exactIdFromDisplay } from '@/utils/tool'
 
 // request login
 export async function login(data) {
@@ -45,6 +47,26 @@ export async function updateAdminInfo(adminLoginToken, data) {
 // regen secret
 export async function regenSecret(adminLoginToken) {
     const response = await requestBase.post('/api/admin/secret/regen', {}, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// request admin list
+export async function fetchAdminList(adminLoginToken, queryParams) {
+    const { page, page_size, user_name, role } = queryParams;
+
+    // 构建请求的基础 URL
+    let requestUrl = `/api/admin/page?page=${page}&page_size=${page_size}`;
+    if (user_name) {
+        requestUrl += `&user_name=${user_name}`;
+	}
+    if (role) {
+        requestUrl += `&role=${role}`;
+    }
+    const response = await requestBase.get(requestUrl, {
         headers: {
             Authorization: `Bearer ${adminLoginToken}`,
         }

@@ -162,16 +162,16 @@ export const asyncRoutes:RouteRecordRaw[] = [
           needIndent: true,
         }
       },
-      {
-        path: 'role',
-        component: () => import('@/views/permission/role.vue'),
-        name: 'PermissionRole',
-        meta: { 
-          title: '角色管理', 
-          affix: true,
-          needIndent: true,
-        }
-      },
+      // {
+      //   path: 'role',
+      //   component: () => import('@/views/permission/role.vue'),
+      //   name: 'PermissionRole',
+      //   meta: { 
+      //     title: '角色管理', 
+      //     affix: true,
+      //     needIndent: true,
+      //   }
+      // },
     ]
   },
   {

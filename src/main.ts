@@ -34,6 +34,7 @@ const vuetify = createVuetify({
 })
 
 import waves from '@/directive/waves'
+import { initEventListeners } from '@/event/modules/index';
 
 const app = createApp(App);
 setupStore(app);
@@ -53,3 +54,6 @@ initDynamicRoutes().then(() => {
   app.use(router);  // 在动态路由初始化完成后挂载路由
   app.mount('#app');
 });
+
+// 监听全局事件
+initEventListeners();

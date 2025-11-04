@@ -10,9 +10,22 @@
 
       </template>
 
+      <el-dropdown class="notification-container right-menu-item hover-effect" trigger="click">
+        <div class="avatar-wrapper">
+          <img 
+            src="@/assets/notification_bell.png"
+            class="user-avatar"
+            @click="showMessageBox"
+          >
+        </div>
+      </el-dropdown>
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img src="@/assets/profile_icon.png" class="user-avatar">
+          <img 
+            src="@/assets/profile_icon.png" 
+            class="user-avatar"
+            @click="openProfile"
+          >
         </div>
       </el-dropdown>
     </div>
@@ -25,6 +38,7 @@ import store from '@/store';
 import Breadcrumb from '@/components/Breadcrumb';
 import Hamburger from '@/components/Hamburger';
 import { defineComponent } from 'vue';
+import emitter from '@/event/eventBus';
 
 export default defineComponent({
   components: {
@@ -44,6 +58,12 @@ export default defineComponent({
     toggleSidebar() {
       store.app().toggleSidebar();
     },
+    showMessageBox() {
+      emitter.emit('business:updated', {});
+    },
+    openProfile() {
+      this.$router.push(`/setting/person`);
+    }
   }
 });
 </script>
@@ -101,7 +121,8 @@ export default defineComponent({
       }
     }
 
-    .avatar-container {
+    .avatar-container,
+    .notification-container {
       margin-right: 30px;
 
       .avatar-wrapper {
@@ -124,6 +145,10 @@ export default defineComponent({
           font-size: 12px;
         }
       }
+    }
+
+    .notification-container {
+      margin-right: 0;
     }
   }
 }
