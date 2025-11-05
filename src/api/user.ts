@@ -42,3 +42,60 @@ export async function updateUser(adminLoginToken, updateParams) {
     })
     return response
 }
+
+// request user list
+export async function getInviteRelation(adminLoginToken, user_id) {
+
+    // 构建请求的基础 URL
+    let requestUrl = `/api/admin/user/invite_relation?user_id=${user_id}`;
+
+    const response = await requestBase.get(requestUrl, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// request user account
+export async function getAccountInfo(adminLoginToken, user_id) {
+
+    // 构建请求的基础 URL
+    let requestUrl = `/api/admin/user/account?user_id=${user_id}`;
+
+    const response = await requestBase.get(requestUrl, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// request update account
+export async function updateAccountInfo(adminLoginToken, updateParams) {
+    const needParams = pick(updateParams, [
+        'user_id',
+        'delta_amount',
+    ])
+
+    const response = await requestBase.put('/api/admin/user/account', needParams, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// request user password
+export async function getPasswordInfo(adminLoginToken, user_id) {
+
+    // 构建请求的基础 URL
+    let requestUrl = `/api/admin/user/password?user_id=${user_id}`;
+
+    const response = await requestBase.get(requestUrl, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

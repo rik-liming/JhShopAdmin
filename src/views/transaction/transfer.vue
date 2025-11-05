@@ -27,7 +27,7 @@
           <span>{{ formatIdDisplay(row.sender_user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="转账用户名" width="130px" align="center">
+      <el-table-column label="转账邮箱" width="130px" align="center">
         <template v-slot="{row}">
           <span>{{ row.sender_user_name }}</span>
         </template>
@@ -37,7 +37,7 @@
           <span>{{ formatIdDisplay(row.receiver_user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="入账用户名" width="130px" align="center">
+      <el-table-column label="入账邮箱" width="130px" align="center">
         <template v-slot="{row}">
           <span>{{ row.receiver_user_name }}</span>
         </template>

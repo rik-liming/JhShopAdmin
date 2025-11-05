@@ -26,7 +26,7 @@
           <span>{{ formatIdDisplay(row.user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名" width="150px" align="center">
+      <el-table-column label="注册邮箱" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.user_name }}</span>
         </template>

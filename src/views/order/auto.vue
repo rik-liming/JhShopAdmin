@@ -24,12 +24,12 @@
           <span>{{ row?.display_order_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="购买用户ID" align="center" width="150" >
+      <el-table-column label="买家ID" align="center" width="100" >
         <template v-slot="{row}">
           <span>{{ formatIdDisplay(row?.buy_user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出售用户ID" align="center" width="150" >
+      <el-table-column label="商户ID" align="center" width="150" >
         <template v-slot="{row}">
           <span>{{ formatIdDisplay(row?.sell_user_id) }}</span>
         </template>
@@ -55,7 +55,7 @@
         </template>
       </el-table-column>
       
-      <el-table-column label="状态" class-name="status-col" width="100" align="center">
+      <el-table-column label="状态" class-name="status-col" width="150" align="center">
         <template v-slot="{row}">
           <span v-if="row.status !== null && row.status !== undefined" :class="getStatusClass(row.status)">{{ payStatusMap[row.status] }}</span>
         </template>
@@ -68,10 +68,10 @@
       
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
         <template v-slot="{row, $index}">
-          <el-button :disabled="row.status !== 4" size="small" type="success" @click="handleModifyStatus(row, 5)">
+          <el-button :disabled="row.status !== 4" size="small" type="success" @click="handleOrderJudge(row, 5)">
             争议通过
           </el-button>
-          <el-button :disabled="row.status !== 4" size="small" type="danger" @click="handleModifyStatus(row, 6)">
+          <el-button :disabled="row.status !== 4" size="small" type="danger" @click="handleOrderJudge(row, 6)">
             争议撤单
           </el-button>
         </template>
@@ -135,7 +135,7 @@ const getStatusClass = (status) => {
 }
 
 export default defineComponent({
-  name: 'NormalOrder',
+  name: 'AutoOrder',
   components: { Pagination },
   directives: { waves },
   data() {
@@ -194,10 +194,10 @@ export default defineComponent({
       this.listQuery.page = 1;
       this.getList();
     },
-    async handleModifyStatus(row, status) {
+    async handleOrderJudge(row, status) {
       const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await OrderApi.updateOrder(adminLoginToken, {
-        id: row.id,
+      const updateResp = await OrderApi.orderJudge(adminLoginToken, {
+        orderId: row.id,
         status,
       })
       if (updateResp.data.code === 10000) {
@@ -206,7 +206,7 @@ export default defineComponent({
         this.list.splice(index, 1, row);
         ElNotification({
           title: 'Success',
-          message: '更新成功',
+          message: '操作成功',
           type: 'success',
           duration: 2000
         });

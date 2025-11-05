@@ -22,7 +22,7 @@
     >
       <el-table-column label="ID" prop="id" align="center" width="200" >
         <template v-slot="{row}">
-          <span>{{ formatIdDisplay(row.id) }}</span>
+          <span class="link-type" @click="handleUpdate(row)">{{ formatIdDisplay(row.id) }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="用户名" width="150px" align="center">
@@ -37,7 +37,7 @@
       </el-table-column> -->
       <el-table-column label="注册邮箱" width="200px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.email ? row.email : '-' }}</span>
+          <span class="link-type" @click="handleUpdate(row)">{{ row.email ? row.email : '-' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="角色" width="150px" align="center">
@@ -52,16 +52,25 @@
       </el-table-column>
       <el-table-column label="上下级" width="90px" align="center">
         <template v-slot="{row}">
-          <span v-if="row.role == 'agent' || row.role == 'platform'" class="link-type" @click="fetchInviteRelation(row)">{{ `查看下级` }}</span>
+          <span v-if="row.role == 'agent'" class="link-type" @click="fetchInviteRelation(row)">{{ `查看下级` }}</span>
           <span>-</span>
         </template>
       </el-table-column>
       <el-table-column label="资产" width="90px" align="center">
         <template v-slot="{row}">
           <span 
-            v-if="row.role === 'platform' || row.role === 'agent' || row.role === 'seller'" 
+            v-if="row.role === 'agent' || row.role === 'seller'" 
             class="link-type" 
             @click="fetchAccountInfo(row)">{{ `查看资产` }}
+          </span>
+          <span>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="false" label="密码" width="90px" align="center">
+        <template v-slot="{row}">
+          <span 
+            class="link-type" 
+            @click="fetchPasswordInfo(row)">{{ `修改密码` }}
           </span>
           <span>-</span>
         </template>
@@ -84,7 +93,7 @@
             启用
           </el-button>
           <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            禁用
+            封禁
           </el-button>
           <el-button type="primary" size="small" @click="handleUpdate(row)">
             编辑
@@ -95,14 +104,14 @@
 
     <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
 
-    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible" width="400">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
         <el-form-item label="ID" prop="id">
           <el-input v-model="temp.id" disabled />
         </el-form-item>
-        <el-form-item label="用户名" prop="user_name">
+        <!-- <el-form-item label="用户名" prop="user_name">
           <el-input v-model="temp.user_name" />
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-form-item label="真实姓名" prop="real_name">
           <el-input v-model="temp.real_name" />
         </el-form-item> -->
@@ -124,7 +133,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="dialog-footer">
+        <div class="tw-flex tw-justify-start tw-ml-20">
           <el-button @click="dialogFormVisible = false">
             取消
           </el-button>
@@ -133,6 +142,84 @@
           </el-button>
         </div>
       </template>
+    </el-dialog>
+
+
+    <el-dialog title="下级情况" v-model="inviteRelationVisible" width="500" align-center>
+      <el-table
+        :data="inviteUsers"
+        border
+        fit
+        highlight-current-row
+        style="width: 100%;"
+      >
+        <el-table-column label="ID" prop="id" align="center" width="80" >
+          <template v-slot="{row}">
+            <span>{{ formatIdDisplay(row.id) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="注册邮箱" width="130px" align="center">
+          <template v-slot="{row}">
+            <span>{{ row.email ? row.email : '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" class-name="status-col" width="100" align="center">
+          <template v-slot="{row}">
+            <el-tag :type="statusFilterMap[row.status]">
+              {{ statusMap[row.status] }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="注册日期" width="150px" align="center">
+          <template v-slot="{row}">
+            <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <el-dialog title="资产情况" v-model="accountVisible" width="500" align-center>
+      <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
+        <el-form-item label="ID">
+          <span>{{ formatIdDisplay(currentAccount.user_id) }}</span>
+        </el-form-item>
+        <el-form-item label="总资产">
+          <span>{{ currentAccount.total_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
+        </el-form-item>
+        <el-form-item label="可用资产">
+          <span>{{ currentAccount.available_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
+        </el-form-item>
+        <el-form-item label="变动值">
+          <el-input v-model="delta_amount" placeholder="变动数值，负数代表减少资产" />
+        </el-form-item>
+        <el-form-item label="变动值">
+          <el-button type="primary" @click="updateAccount()">
+            确认修改
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+
+    <el-dialog title="用户密码" v-model="passwordVisible" width="500" align-center>
+      <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
+        <el-form-item label="ID">
+          <span>{{ formatIdDisplay(currentAccount.user_id) }}</span>
+        </el-form-item>
+        <el-form-item label="总资产">
+          <span>{{ currentAccount.total_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
+        </el-form-item>
+        <el-form-item label="可用资产">
+          <span>{{ currentAccount.available_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
+        </el-form-item>
+        <el-form-item label="变动值">
+          <el-input v-model="delta_amount" placeholder="变动数值，负数代表减少资产" />
+        </el-form-item>
+        <el-form-item label="变动值">
+          <el-button type="primary" @click="updateAccount()">
+            确认修改
+          </el-button>
+        </el-form-item>
+      </el-form>
     </el-dialog>
   </div>
 </template>
@@ -218,6 +305,9 @@ export default defineComponent({
         created_at: undefined
       },
       dialogFormVisible: false,
+      inviteRelationVisible: false,
+      accountVisible: false,
+      passwordVisible: false,
       dialogStatus: '',
       textMap: {
         update: '编辑',
@@ -225,6 +315,10 @@ export default defineComponent({
       },
       rules: {
       },
+      inviteUsers: null,
+      currentAccount: {},
+      delta_amount: '',
+      currentPasswordObj: {}
     };
   },
   created() {
@@ -307,27 +401,58 @@ export default defineComponent({
       }
     },
     async fetchInviteRelation(row) {
-      alert("暂无数据");
-      // const adminLoginToken = store.admin().adminLoginToken
-      // const updateResp = await UserApi.updateUser(adminLoginToken, {
-      //   id: row.id,
-      //   status,
-      // })
-      // if (updateResp.data.code === 10000) {
-      //   row.status = status;
-      //   const index = this.list.findIndex(v => v.id === row.id);
-      //   this.list.splice(index, 1, row);
-      //   ElNotification({
-      //     title: 'Success',
-      //     message: '更新成功',
-      //     type: 'success',
-      //     duration: 2000
-      //   });
-      // }
+      const adminLoginToken = store.admin().adminLoginToken
+      const relationResp = await UserApi.getInviteRelation(adminLoginToken, row.id)
+      if (relationResp.data.code === 10000) {
+        const users = relationResp.data.data.users
+        this.inviteUsers = users.filter(user => user.id !== row.id);
+        this.inviteRelationVisible = true
+      }
     },
     async fetchAccountInfo(row) {
-      alert("暂无数据");
-    }
+      const adminLoginToken = store.admin().adminLoginToken
+      const accountResp = await UserApi.getAccountInfo(adminLoginToken, row.id)
+      if (accountResp.data.code === 10000) {
+        this.currentAccount = accountResp.data.data.account
+        this.accountVisible = true
+      }
+    },
+    async updateAccount() {
+      const adminLoginToken = store.admin().adminLoginToken
+      const updateAccountResp = await UserApi.updateAccountInfo(adminLoginToken, {
+        user_id: this.currentAccount.user_id,
+        delta_amount: this.delta_amount
+      })
+
+      if (updateAccountResp.data.code === 10000) {
+        ElMessage.success("更新成功！")
+        this.currentAccount = updateAccountResp.data.data.account
+      } else {
+        ElMessage.error("更新失败，请检查数值！")
+      }
+    },
+    async fetchPasswordInfo(row) {
+      const adminLoginToken = store.admin().adminLoginToken
+      const passwordResp = await UserApi.getPasswordInfo(adminLoginToken, row.id)
+      if (passwordResp.data.code === 10000) {
+        this.currentPasswordObj = passwordResp.data.data
+        this.passwordVisible = true
+      }
+    },
+    async updatePassword() {
+      const adminLoginToken = store.admin().adminLoginToken
+      const updateAccountResp = await UserApi.updateAccountInfo(adminLoginToken, {
+        user_id: this.currentAccount.user_id,
+        delta_amount: this.delta_amount
+      })
+
+      if (updateAccountResp.data.code === 10000) {
+        ElMessage.success("更新成功！")
+        this.currentAccount = updateAccountResp.data.data.account
+      } else {
+        ElMessage.error("更新失败，请检查数值！")
+      }
+    },
   }
 });
 </script>

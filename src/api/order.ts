@@ -23,3 +23,21 @@ export async function getOrderByPage(adminLoginToken, queryParams) {
     })
     return response
 }
+
+// request order judge
+export async function orderJudge(adminLoginToken, param) {
+    const needParams = pick(param, [
+        'orderId',
+        'status'
+    ])
+
+    // 构建请求的基础 URL
+    let requestUrl = `/api/admin/order/judge`;
+
+    const response = await requestBase.post(requestUrl, needParams, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

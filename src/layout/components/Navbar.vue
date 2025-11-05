@@ -12,11 +12,12 @@
 
       <el-dropdown class="notification-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img 
+          <!-- <img 
             src="@/assets/notification_bell.png"
             class="user-avatar"
             @click="showMessageBox"
-          >
+          > -->
+          <notification-bell @toggleClick="showMessageBox" />
         </div>
       </el-dropdown>
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
@@ -24,9 +25,18 @@
           <img 
             src="@/assets/profile_icon.png" 
             class="user-avatar"
-            @click="openProfile"
           >
         </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <router-link to="/setting/person">
+              <el-dropdown-item>个人中心</el-dropdown-item>
+            </router-link>
+            <router-link to="/logout">
+              <el-dropdown-item divided>登出</el-dropdown-item>
+            </router-link>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
     </div>
   </div>
@@ -37,6 +47,7 @@ import { mapState } from 'pinia';
 import store from '@/store';
 import Breadcrumb from '@/components/Breadcrumb';
 import Hamburger from '@/components/Hamburger';
+import NotificationBell from '@/components/NotificationBell';
 import { defineComponent } from 'vue';
 import emitter from '@/event/eventBus';
 
@@ -44,6 +55,7 @@ export default defineComponent({
   components: {
     Breadcrumb,
     Hamburger,
+    NotificationBell,
   },
   computed: {
     ...mapState(store.app, [
@@ -61,9 +73,6 @@ export default defineComponent({
     showMessageBox() {
       emitter.emit('business:updated', {});
     },
-    openProfile() {
-      this.$router.push(`/setting/person`);
-    }
   }
 });
 </script>
@@ -126,7 +135,7 @@ export default defineComponent({
       margin-right: 30px;
 
       .avatar-wrapper {
-        margin-top: 5px;
+        margin-top: 10px;
         position: relative;
         height: 45px;
 
@@ -149,6 +158,9 @@ export default defineComponent({
 
     .notification-container {
       margin-right: 0;
+      .avatar-wrapper {
+        margin-top: 0px;
+      }
     }
   }
 }

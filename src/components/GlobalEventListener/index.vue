@@ -77,6 +77,7 @@ onMounted(() => {
 
   // 监听业务更新事件
   emitter.on('business:updated', async (data: any) => {
+	messageDialogTitle.value = "待处理业务消息"
 	messageDialogVisible.value = true;
   });
 

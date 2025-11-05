@@ -152,16 +152,6 @@ export const asyncRoutes:RouteRecordRaw[] = [
     },
     component: Layout,
     children: [
-      {
-        path: 'admin',
-        component: () => import('@/views/permission/admin.vue'),
-        name: 'PermissionAdmin',
-        meta: { 
-          title: '管理员管理', 
-          affix: true,
-          needIndent: true,
-        }
-      },
       // {
       //   path: 'role',
       //   component: () => import('@/views/permission/role.vue'),
@@ -172,6 +162,16 @@ export const asyncRoutes:RouteRecordRaw[] = [
       //     needIndent: true,
       //   }
       // },
+      {
+        path: 'admin',
+        component: () => import('@/views/permission/admin.vue'),
+        name: 'PermissionAdmin',
+        meta: { 
+          title: '管理员管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
     ]
   },
   {
