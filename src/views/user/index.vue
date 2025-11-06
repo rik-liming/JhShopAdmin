@@ -66,7 +66,7 @@
           <span>-</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="false" label="密码" width="90px" align="center">
+      <el-table-column label="密码" width="90px" align="center">
         <template v-slot="{row}">
           <span 
             class="link-type" 
@@ -133,7 +133,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="tw-flex tw-justify-start tw-ml-20">
+        <div class="tw-flex tw-justify-start tw-ml-32">
           <el-button @click="dialogFormVisible = false">
             取消
           </el-button>
@@ -145,13 +145,13 @@
     </el-dialog>
 
 
-    <el-dialog title="下级情况" v-model="inviteRelationVisible" width="500" align-center>
+    <el-dialog title="下级情况" v-model="inviteRelationVisible" :width="getAdjustWidth(420, 0, 500)" align-center>
       <el-table
         :data="inviteUsers"
         border
         fit
         highlight-current-row
-        style="width: 100%;"
+        style="width: 100%; height: 300px; overflow: auto;"
       >
         <el-table-column label="ID" prop="id" align="center" width="80" >
           <template v-slot="{row}">
@@ -178,7 +178,7 @@
       </el-table>
     </el-dialog>
 
-    <el-dialog title="资产情况" v-model="accountVisible" width="500" align-center>
+    <el-dialog title="资产情况" v-model="accountVisible" width="400" align-center>
       <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
         <el-form-item label="ID">
           <span>{{ formatIdDisplay(currentAccount.user_id) }}</span>
@@ -192,7 +192,10 @@
         <el-form-item label="变动值">
           <el-input v-model="delta_amount" placeholder="变动数值，负数代表减少资产" />
         </el-form-item>
-        <el-form-item label="变动值">
+        <el-form-item>
+          <el-button @click="accountVisible = false">
+            取消
+          </el-button>
           <el-button type="primary" @click="updateAccount()">
             确认修改
           </el-button>
@@ -200,22 +203,25 @@
       </el-form>
     </el-dialog>
 
-    <el-dialog title="用户密码" v-model="passwordVisible" width="500" align-center>
+    <el-dialog title="用户密码" v-model="passwordVisible" :width="getAdjustWidth(400, 380, 430)" align-center>
       <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
-        <el-form-item label="ID">
-          <span>{{ formatIdDisplay(currentAccount.user_id) }}</span>
+        <el-form-item label="登录密码">
+          <el-input type="password" v-model="currentPasswordObj.login_password" />
         </el-form-item>
-        <el-form-item label="总资产">
-          <span>{{ currentAccount.total_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
+        <el-form-item label="二步验证">
+          <el-input type="password" v-model="currentPasswordObj.two_factor_secret" />
         </el-form-item>
-        <el-form-item label="可用资产">
-          <span>{{ currentAccount.available_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
+        <el-form-item label="支付密码">
+          <el-input type="password" v-model="currentPasswordObj.payment_password" />
         </el-form-item>
-        <el-form-item label="变动值">
-          <el-input v-model="delta_amount" placeholder="变动数值，负数代表减少资产" />
+        <el-form-item label-width="0">
+          <span class="tw-w-full tw-text-red-500">注意，密码输入值留空，代表清空该密码</span>
         </el-form-item>
-        <el-form-item label="变动值">
-          <el-button type="primary" @click="updateAccount()">
+        <el-form-item>
+          <el-button @click="passwordVisible = false">
+            取消
+          </el-button>
+          <el-button type="primary" @click="updatePasswordInfo()">
             确认修改
           </el-button>
         </el-form-item>
@@ -233,7 +239,7 @@ import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
 import { ElMessage } from 'element-plus';
-import { formatIdDisplay } from '@/utils/tool'
+import { formatIdDisplay, getAdjustWidth } from '@/utils/tool'
 
 const roleTypeOptions = [
   { key: 'platform', display_name: '平台总代理' },
@@ -327,6 +333,7 @@ export default defineComponent({
   methods: {
     parseTime,
     formatIdDisplay,
+    getAdjustWidth,
     async getList() {
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken
@@ -439,18 +446,20 @@ export default defineComponent({
         this.passwordVisible = true
       }
     },
-    async updatePassword() {
+    async updatePasswordInfo() {
       const adminLoginToken = store.admin().adminLoginToken
-      const updateAccountResp = await UserApi.updateAccountInfo(adminLoginToken, {
-        user_id: this.currentAccount.user_id,
-        delta_amount: this.delta_amount
+      const updatePasswordResp = await UserApi.updatePasswordInfo(adminLoginToken, {
+        user_id: this.currentPasswordObj.user_id,
+        login_password: this.currentPasswordObj.login_password,
+        two_factor_secret: this.currentPasswordObj.two_factor_secret,
+        payment_password: this.currentPasswordObj.payment_password,
       })
 
-      if (updateAccountResp.data.code === 10000) {
+      if (updatePasswordResp.data.code === 10000) {
         ElMessage.success("更新成功！")
-        this.currentAccount = updateAccountResp.data.data.account
+        this.passwordVisible = false
       } else {
-        ElMessage.error("更新失败，请检查数值！")
+        ElMessage.error(updatePasswordResp.data.msg)
       }
     },
   }

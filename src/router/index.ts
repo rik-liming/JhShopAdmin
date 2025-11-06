@@ -29,7 +29,7 @@ const Layout = ():RouteComponent => import('@/layout/index.vue');
  *
  * 注意：hidden、alwaysShow 属性配置移动到了meta中！！！
  */
-export const constantRoutes:RouteRecordRaw[] = [
+export const firstConstantRoutes:RouteRecordRaw[] = [
   // 不需要展示在侧边栏的
   {
     path: '/redirect',
@@ -152,16 +152,16 @@ export const asyncRoutes:RouteRecordRaw[] = [
     },
     component: Layout,
     children: [
-      // {
-      //   path: 'role',
-      //   component: () => import('@/views/permission/role.vue'),
-      //   name: 'PermissionRole',
-      //   meta: { 
-      //     title: '角色管理', 
-      //     affix: true,
-      //     needIndent: true,
-      //   }
-      // },
+      {
+        path: 'role',
+        component: () => import('@/views/permission/role.vue'),
+        name: 'PermissionRole',
+        meta: { 
+          title: '角色管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
       {
         path: 'admin',
         component: () => import('@/views/permission/admin.vue'),
@@ -187,7 +187,12 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: '',
         component: () => import('@/views/user/index.vue'),
         name: 'UserIndex',
-        meta: { title: '会员管理', icon: 'user', affix: true }
+        meta: { 
+          title: '会员管理', 
+          icon: 'user', 
+          affix: true,
+          reddotKey: 'user',
+        }
       }
     ]
   },
@@ -199,6 +204,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
       title: '财务管理', 
       icon: markRaw(IconPermission),
       alwaysShow: true, // will always show the root menu
+      reddotKey: 'transaction',
     },
     component: Layout,
     children: [
@@ -221,6 +227,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '充值管理', 
           affix: true,
           needIndent: true,
+          reddotKey: 'recharge',
         }
       },
       {
@@ -231,6 +238,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '转账管理', 
           affix: true,
           needIndent: true,
+          reddotKey: 'transfer',
         }
       },
       {
@@ -241,6 +249,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '提现管理', 
           affix: true,
           needIndent: true,
+          reddotKey: 'withdraw',
         }
       },
     ]
@@ -253,6 +262,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
       roles: ['admin', 'superAdmin'],
       title: '订单管理', 
       icon: 'shopping',
+      reddotKey: 'order',
     },
     component: Layout,
     children: [
@@ -274,6 +284,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '常规订单', 
           affix: true,
           needIndent: true,
+          reddotKey: 'order_normal',
         }
       },
       {
@@ -284,6 +295,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
           title: '自动化订单', 
           affix: true,
           needIndent: true,
+          reddotKey: 'order_auto',
         }
       },
     ]
@@ -352,7 +364,9 @@ export const asyncRoutes:RouteRecordRaw[] = [
   //     },
   //   ]
   // },
+];
 
+export const lastConstantRoutes:RouteRecordRaw[] = [
   // logout
   {
     path: '/logout',
@@ -384,7 +398,7 @@ const createTheRouter = ():Router => createRouter({
   // https://router.vuejs.org/zh/guide/essentials/history-mode.html
   // history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior: () => ({ top: 0 }),
-  routes: constantRoutes
+  routes: firstConstantRoutes
 });
 
 interface RouterPro extends Router {

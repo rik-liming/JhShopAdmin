@@ -52,9 +52,16 @@ export function formatImageUrl(imagePath) {
     return `${import.meta.env.VITE_CDN_ENDPOINT}${imagePath}`
 }
 
-export function getAdjustWidth(baseWidth) {
+export function getAdjustWidth(baseWidth, minWidth, maxWidth) {
   const { body } = document;
   const rect = body.getBoundingClientRect();
   
-  return baseWidth / 430 * rect.width;
+  const calWidth = baseWidth / 430 * rect.width;
+  if (minWidth && calWidth < minWidth) {
+    return minWidth
+  }
+  if (maxWidth && calWidth > maxWidth) {
+    return maxWidth
+  }
+  return calWidth
 }

@@ -40,6 +40,7 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElTree: typeof import('element-plus/es')['ElTree']
     GlobalEventListener: typeof import('./src/components/GlobalEventListener/index.vue')['default']
     Hamburger: typeof import('./src/components/Hamburger/index.vue')['default']
     'Index copy': typeof import('./src/components/NotificationBell/index copy.vue')['default']

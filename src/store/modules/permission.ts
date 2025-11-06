@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia';
-import { asyncRoutes, constantRoutes } from '@/router';
+import { asyncRoutes, firstConstantRoutes, lastConstantRoutes } from '@/router';
 import type { RouteRecordRaw } from 'vue-router';
 
 interface IPermissionState {
   routes: Array<RouteRecordRaw>;
   addRoutes: Array<RouteRecordRaw>;
+  routerKeys: string[];
 }
 
 /**
@@ -13,12 +14,13 @@ interface IPermissionState {
  * @param route
  */
 function hasPermission(roles:string[], route:RouteRecordRaw):boolean {
-  if (route.meta && route.meta.roles) {
-    const rolesArr = route.meta.roles as string[];
-    return roles.some(role => rolesArr.includes(role));
-  } else {
+  // if (route.meta && route.meta.roles) {
+  //   const rolesArr = route.meta.roles as string[];
+  //   return roles.some(role => rolesArr.includes(role));
+  // } else {
+  //   return true;
+  // }
     return true;
-  }
 }
 
 /**
@@ -46,13 +48,14 @@ export default defineStore({
   id: 'permission',
   state: ():IPermissionState => ({
     routes: [],
-    addRoutes: []
+    addRoutes: [],
+    routerKeys: [],
   }),
   getters: {},
   actions: {
     setRoutes(routes: RouteRecordRaw[]) {
       this.addRoutes = routes;
-      this.routes = constantRoutes.concat(routes);
+      this.routes = firstConstantRoutes.concat(routes).concat(lastConstantRoutes);
     },
     generateRoutes(roles: string[]) {
       let accessedRoutes;
@@ -63,6 +66,9 @@ export default defineStore({
       }
       this.setRoutes(accessedRoutes);
       return accessedRoutes;
+    },
+    setRouterKeys(routerKeys: string[]) {
+      this.setRouterKeys(routerKeys)
     }
   }
 });

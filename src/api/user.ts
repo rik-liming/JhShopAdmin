@@ -99,3 +99,20 @@ export async function getPasswordInfo(adminLoginToken, user_id) {
     })
     return response
 }
+
+// request update password
+export async function updatePasswordInfo(adminLoginToken, updateParams) {
+    const needParams = pick(updateParams, [
+        'user_id',
+        'login_password',
+        'two_factor_secret',
+        'payment_password',
+    ])
+
+    const response = await requestBase.put('/api/admin/user/password', needParams, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

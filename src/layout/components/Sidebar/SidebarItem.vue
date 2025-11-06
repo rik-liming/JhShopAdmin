@@ -17,6 +17,23 @@
           <template #title>
             <span v-if="onlyOneChild.meta.needIndent" class="text text-one tw-ml-6">{{ onlyOneChild.meta.title }}</span>
             <span v-else class="text text-one">{{ onlyOneChild.meta.title }}</span>
+            <span
+              v-if="onlyOneChild.meta.reddotKey
+              && reddot?.[onlyOneChild.meta.reddotKey]
+              && reddot?.[onlyOneChild.meta.reddotKey] > 0
+              "
+              class="reddot-child-item"
+              :style="{
+                width: '18px',
+                height: '18px',
+                right: '10px',
+                top: '17px',
+                lineHeight: '16px',
+                fontSize: '14px'
+              }"
+            >
+              {{ reddot?.[onlyOneChild.meta.reddotKey] > 99 ? '99+' : reddot?.[onlyOneChild.meta.reddotKey] }}
+            </span>
           </template>
         </el-menu-item>
       </app-link>
@@ -31,9 +48,32 @@
         </template>
         <!-- <svg-icon v-else icon-class="list" /> -->
         <span class="text text-two">{{ item.meta.title }}</span>
+        <span
+          v-if="item.meta.reddotKey 
+            && reddot?.[item.meta.reddotKey]
+            && reddot?.[item.meta.reddotKey] > 0
+            "
+          class="reddot-parent-item"
+          :style="{
+            width: '8px',
+            height: '8px',
+            right: '30px',
+            top: '17px',
+            lineHeight: '16px',
+            fontSize: '14px'
+          }"
+        >
+        </span>
       </template>
-      <sidebar-item v-for="child in item.children" :key="child.path" :is-nest="true" :item="child"
-                    :base-path="resolvePath(child.path)" class="nest-menu" />
+      <sidebar-item 
+        v-for="child in item.children" 
+        :key="child.path" 
+        :is-nest="true" 
+        :item="child"
+        :base-path="resolvePath(child.path)" 
+        class="nest-menu"
+        :reddot="reddot"
+      />
     </el-sub-menu>
   </div>
 </template>
@@ -72,7 +112,11 @@ export default defineComponent({
     isTopRoute: { // 是否为顶层路由
       type: Boolean,
       default: false
-    }
+    },
+    reddot: {
+      type: Object,
+      default: () => ({})
+    },
   },
   data() {
     // To fix https://github.com/PanJiaChen/vue-admin-template/issues/237
@@ -209,4 +253,29 @@ export default defineComponent({
   left: 0;
   right: 0;
 }
+
+.reddot-child-item {
+  position: absolute;
+  background-color: red;
+  color: white;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: bold;
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 0 3px; /* 当数字大于1位，增加左右内边距 */
+}
+
+.reddot-parent-item {
+  position: absolute;
+  background-color: red;
+  color: white;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: bold;
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 0 3px; /* 当数字大于1位，增加左右内边距 */
+}
+
 </style>

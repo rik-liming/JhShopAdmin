@@ -5,7 +5,14 @@
       <el-menu class="left-menu" :default-active="activeMenu" :collapse="isCollapse"
                :background-color="variables.menuBg" :text-color="variables.menuText" :unique-opened="false"
                :active-text-color="variables.menuActiveText" :collapse-transition="false" mode="vertical">
-        <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" :is-top-route="true" />
+        <sidebar-item 
+          v-for="route in permission_routes" 
+          :key="route.path" 
+          :item="route" 
+          :base-path="route.path" 
+          :is-top-route="true"
+          :reddot="reddot"
+        />
       </el-menu>
     </el-scrollbar>
   </div>
@@ -18,6 +25,7 @@ import Logo from './Logo';
 import SidebarItem from './SidebarItem';
 // import variables from '@/styles/variables.modules.scss';
 import store from '@/store';
+import * as ReddotApi from '@/api/reddot'
 
 export default defineComponent({
   name: 'Sidebar',
@@ -31,7 +39,9 @@ export default defineComponent({
         menuBg: '#304156',
         menuText: '#fff',
         menuActiveText: '#409EFF'
-      }
+      },
+      reddot: {}, // 红点数据
+      reddotTimer: null,
     };
   },
   computed: {
@@ -60,6 +70,26 @@ export default defineComponent({
       }
       return !this.sidebar.opened;
     }
+  },
+  methods: {
+    // 获取红点数据
+    async fetchReddot() {
+      try {
+        const resp = await ReddotApi.getReddot(store.admin().adminLoginToken)
+        if (resp.data.code === 10000) {
+          this.reddot = resp.data.data.reddot;
+        }
+      } catch (err) {
+        console.error('获取红点失败', err);
+      }
+    }
+  },
+  mounted() {
+    this.fetchReddot(); // 组件加载时立即请求一次
+    this.reddotTimer = setInterval(this.fetchReddot, 20000);
+  },
+  beforeUnmount() {
+    clearInterval(this.reddotTimer); // 销毁组件时清理定时器
   }
 });
 </script>
