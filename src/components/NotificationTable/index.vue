@@ -74,7 +74,7 @@ const businessTypeMap = {
 const statusMap = {
   read: '已读',
   unread: '未读',
-  update: '未读（有状态更新）',
+  updated: '未读（有状态更新）',
 }
 
 const props = defineProps({
@@ -103,6 +103,7 @@ const getList = async () => {
       emit('table-update-end');
     }, 100);
     
+    list.value = []
     const response = await MessageApi.getMessageList(adminStore.adminLoginToken)
     if (response.data.code === 10000) {
       const messages = response.data.data.messages;

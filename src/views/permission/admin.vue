@@ -71,12 +71,6 @@
         <el-form-item label="用户名" prop="user_name">
           <el-input v-model="temp.user_name" />
         </el-form-item>
-        <!-- <el-form-item label="真实姓名" prop="real_name">
-          <el-input v-model="temp.real_name" />
-        </el-form-item> -->
-        <el-form-item label="注册邮箱" prop="email">
-          <el-input v-model="temp.email" disabled />
-        </el-form-item>
         <el-form-item label="角色" prop="role" v-if="temp.role !== 'platform'">
           <el-select v-model="temp.role" class="filter-item" placeholder="请选择角色">
             <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />

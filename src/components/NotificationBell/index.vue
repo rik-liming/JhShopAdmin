@@ -86,14 +86,19 @@ const updateReddot = async() => {
 // 初始化并定时更新红点
 onMounted(async() => {
   updateReddot()
-  const intervalId = setInterval(() => {
-    updateReddot()
-  }, 10000)  // 每10秒更新一次
 
-  // 清除定时器，防止内存泄漏
-  onUnmounted(() => {
-    clearInterval(intervalId)
-  })
+  // 监听交易状态变更事件
+  emitter.on('business:updated', async (data) => {
+    updateReddot()
+  });
+
+  // 监听消息弹框状态变更事件
+  emitter.on('message:read', async (data) => {
+    // 如果是自己
+    if (data.admin_id === adminStore?.admin?.value?.id) {
+      updateReddot()
+    }
+  });
 });
 </script>
 

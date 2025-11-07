@@ -25,7 +25,6 @@
 	<el-dialog
 		v-model="messageDialogVisible"
 		class="messageDialog" 
-		@open="updateTableKey"
 		align-center
 	>
       <div class="tw-text-[20px] tw-text-center tw-mb-4">{{ messageDialogTitle }}</div>
@@ -78,7 +77,12 @@ onMounted(() => {
   // 监听业务更新事件
   emitter.on('business:updated', async (data: any) => {
 	messageDialogTitle.value = "待处理业务消息"
-	messageDialogVisible.value = true;
+	
+	updateTableKey()
+
+	if (!messageDialogVisible.value) {
+		messageDialogVisible.value = true;
+	}
   });
 
   // 监听消息弹框状态变更事件
