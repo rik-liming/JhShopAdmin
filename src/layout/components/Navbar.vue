@@ -21,12 +21,13 @@
         </div>
       </el-dropdown>
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
-        <div class="avatar-wrapper">
+        <!-- <div class="avatar-wrapper">
           <img 
             src="@/assets/profile_icon.png" 
             class="user-avatar"
           >
-        </div>
+        </div> -->
+        <avatar-no-id />
         <template #dropdown>
           <el-dropdown-menu>
             <router-link to="/setting/person">
@@ -48,6 +49,7 @@ import store from '@/store';
 import Breadcrumb from '@/components/Breadcrumb';
 import Hamburger from '@/components/Hamburger';
 import NotificationBell from '@/components/NotificationBell';
+import AvatarNoId from '@/components/AvatarNoId';
 import { defineComponent } from 'vue';
 import emitter from '@/event/eventBus';
 
@@ -56,6 +58,7 @@ export default defineComponent({
     Breadcrumb,
     Hamburger,
     NotificationBell,
+    AvatarNoId,
   },
   computed: {
     ...mapState(store.app, [

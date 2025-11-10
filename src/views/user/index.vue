@@ -22,27 +22,17 @@
     >
       <el-table-column label="ID" prop="id" align="center" width="200" >
         <template v-slot="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ formatIdDisplay(row.id) }}</span>
+          <span class="link-type" @click="handleShowDetail(row)">{{ formatIdDisplay(row.id) }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="用户名" width="150px" align="center">
-        <template v-slot="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
-        </template>
-      </el-table-column> -->
-      <!-- <el-table-column label="真实姓名" width="110px" align="center">
-        <template v-slot="{row}">
-          <span>{{ row.real_time ? row.real_time : '-' }}</span>
-        </template>
-      </el-table-column> -->
       <el-table-column label="注册邮箱" width="200px" align="center">
         <template v-slot="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.email ? row.email : '-' }}</span>
+          <span class="link-type" @click="handleShowDetail(row)">{{ row.email ? row.email : '-' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="角色" width="150px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
+          <span class="link-type" @click="handleShowRole(row)">{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="邀请码" width="150px" align="center">
@@ -87,17 +77,16 @@
           <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template v-slot="{row, $index}">
-          <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
-            启用
-          </el-button>
-          <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            封禁
-          </el-button>
-          <el-button type="primary" size="small" @click="handleUpdate(row)">
-            编辑
-          </el-button>
+          <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
+            <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
+              启用
+            </el-button>
+            <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+              封禁
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -105,47 +94,66 @@
     <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
 
     <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible" width="400">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
-        <el-form-item label="ID" prop="id">
-          <el-input v-model="temp.id" disabled />
+      <el-form :model="currentUser" label-position="left" label-width="120px" style="width: 300px; margin-left:50px;" :label-style="{ fontWeight: 'bold' }">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold">ID:</span>
+          </template>
+          <span>{{ formatIdDisplay(currentUser.id) }}</span>
         </el-form-item>
-        <!-- <el-form-item label="用户名" prop="user_name">
-          <el-input v-model="temp.user_name" />
-        </el-form-item> -->
-        <!-- <el-form-item label="真实姓名" prop="real_name">
-          <el-input v-model="temp.real_name" />
-        </el-form-item> -->
-        <el-form-item label="注册邮箱" prop="email">
-          <el-input v-model="temp.email" disabled />
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold">注册邮箱:</span>
+          </template>
+          <span>{{ currentUser.email }}</span>
         </el-form-item>
-        <el-form-item label="角色" prop="role" v-if="temp.role !== 'platform'">
-          <el-select v-model="temp.role" class="filter-item" placeholder="请选择角色">
-            <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold">角色:</span>
+          </template>
+          <span>{{ roleTypeMap[currentUser.role] }}</span>
         </el-form-item>
-        <el-form-item label="注册时间" prop="created_at">
-          <el-date-picker v-model="temp.created_at" type="datetime" disabled />
+        <el-form-item v-if="currentUser.invite_code">
+          <template #label>
+            <span class="tw-font-bold">邀请码:</span>
+          </template>
+          <span>{{ currentUser.invite_code }}</span>
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select" disabled>
-            <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
+        <el-form-item v-if="currentUser.role === 'autoBuyer'">
+          <template #label>
+            <span class="tw-font-bold">远程下单链接:</span>
+          </template>
+          <el-tooltip placement="top">
+            <template #content>
+              {{ getRemoteBuyLink(currentUser.id) }}
+            </template>
+            <div class="tw-flex tw-items-center">
+              <span>{{ `下单链接...` }}</span>
+              <el-icon class="cursor-pointer tw-ml-6" @click="copyRemoteBuyLink(currentUser.id)">
+                <component :is="iconCopy" />
+              </el-icon>
+            </div>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold">状态:</span>
+          </template>
+          <el-tag :type="statusFilterMap[currentUser.status]">
+            {{ statusMap[currentUser.status] }}
+          </el-tag>
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold">注册时间:</span>
+          </template>
+          <span>{{ parseTime(currentUser.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </el-form-item>
       </el-form>
-      <template #footer>
-        <div class="tw-flex tw-justify-start tw-ml-32">
-          <el-button @click="dialogFormVisible = false">
-            取消
-          </el-button>
-          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-            确认
-          </el-button>
-        </div>
-      </template>
     </el-dialog>
 
 
-    <el-dialog title="下级情况" v-model="inviteRelationVisible" :width="getAdjustWidth(420, 0, 500)" align-center>
+    <el-dialog :title="`${formatIdDisplay(currentUser.id)} - 下级情况`" v-model="inviteRelationVisible" :width="getAdjustWidth(420, 0, 500)" align-center>
       <el-table
         :data="inviteUsers"
         border
@@ -179,20 +187,32 @@
     </el-dialog>
 
     <el-dialog title="资产情况" v-model="accountVisible" width="400" align-center>
-      <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
-        <el-form-item label="ID">
+      <el-form label-position="left" style="width: 300px; margin-left:50px;">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">ID:</span>
+          </template>
           <span>{{ formatIdDisplay(currentAccount.user_id) }}</span>
         </el-form-item>
-        <el-form-item label="总资产">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">总资产:</span>
+          </template>
           <span>{{ currentAccount.total_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
         </el-form-item>
-        <el-form-item label="可用资产">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">可用资产:</span>
+          </template>
           <span>{{ currentAccount.available_balance }}</span><span class="tw-ml-4 tw-font-sm">USDT</span>
         </el-form-item>
-        <el-form-item label="变动值">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">变动值:</span>
+          </template>
           <el-input v-model="delta_amount" placeholder="变动数值，负数代表减少资产" />
         </el-form-item>
-        <el-form-item>
+        <el-form-item class="tw-ml-16">
           <el-button @click="accountVisible = false">
             取消
           </el-button>
@@ -204,24 +224,66 @@
     </el-dialog>
 
     <el-dialog title="用户密码" v-model="passwordVisible" :width="getAdjustWidth(400, 380, 430)" align-center>
-      <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
-        <el-form-item label="登录密码">
+      <el-form label-position="left" style="width: 300px; margin-left:50px;">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">ID:</span>
+          </template>
+          <span>{{ formatIdDisplay(currentPasswordObj.user_id) }}</span>
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">登录密码:</span>
+          </template>
           <el-input type="password" v-model="currentPasswordObj.login_password" />
         </el-form-item>
-        <el-form-item label="二步验证">
-          <el-input type="password" v-model="currentPasswordObj.two_factor_secret" />
-        </el-form-item>
-        <el-form-item label="支付密码">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">支付密码:</span>
+          </template>
           <el-input type="password" v-model="currentPasswordObj.payment_password" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">谷歌验证:</span>
+          </template>
+          <el-input type="password" v-model="currentPasswordObj.two_factor_secret" />
         </el-form-item>
         <el-form-item label-width="0">
           <span class="tw-w-full tw-text-red-500">注意，密码输入值留空，代表清空该密码</span>
         </el-form-item>
-        <el-form-item>
+        <el-form-item class="tw-ml-20">
           <el-button @click="passwordVisible = false">
             取消
           </el-button>
           <el-button type="primary" @click="updatePasswordInfo()">
+            确认修改
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+
+    <el-dialog title="角色详情" v-model="changeRoleVisible" width="400" align-center>
+      <el-form label-position="left" label-width="70px" style="width: 300px; margin-left:50px;">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">ID:</span>
+          </template>
+          <span>{{ formatIdDisplay(currentUser.id) }}</span>
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">角色:</span>
+          </template>
+          <el-select v-model="currentUser.role" class="filter-item" placeholder="请选择角色">
+            <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="changeRoleVisible = false">
+            取消
+          </el-button>
+          <el-button type="primary" @click="updateRole()">
             确认修改
           </el-button>
         </el-form-item>
@@ -232,7 +294,7 @@
 
 <script>
 import { defineComponent, markRaw } from 'vue';
-import { Search, Edit } from '@element-plus/icons-vue';
+import { Search, Edit, CopyDocument } from '@element-plus/icons-vue';
 import * as UserApi from '@/api/user';
 import store from '@/store';
 import waves from '@/directive/waves'; // waves directive
@@ -267,7 +329,7 @@ const statusOptions = [
   { key: 1, display_name: '正常' },
 ];
 const statusMap = {
-  '0': '已禁用',
+  '0': '已封禁',
   '1': '正常',
 }
 const statusFilterMap = {
@@ -283,6 +345,7 @@ export default defineComponent({
     return {
       iconSearch: markRaw(Search),
       iconEdit: markRaw(Edit),
+      iconCopy: markRaw(CopyDocument),
       tableKey: 0,
       list: null,
       total: 0,
@@ -301,23 +364,15 @@ export default defineComponent({
       statusOptions,
       statusMap,
       statusFilterMap,
-      temp: {
-        id: undefined,
-        user_name: '',
-        real_name: '',
-        email: '',
-        role: '',
-        status: 1,
-        created_at: undefined
-      },
+      currentUser: {},
       dialogFormVisible: false,
       inviteRelationVisible: false,
       accountVisible: false,
       passwordVisible: false,
+      changeRoleVisible: false,
       dialogStatus: '',
       textMap: {
-        update: '编辑',
-        create: '新建'
+        detail: '详情',
       },
       rules: {
       },
@@ -380,23 +435,20 @@ export default defineComponent({
         });
       }
     },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.dialogStatus = 'update';
+    handleShowDetail(row) {
+      this.currentUser = Object.assign({}, row); // copy obj
+      this.dialogStatus = 'detail';
       this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate();
-      });
     },
     async updateData() {
       const isValid = await this.$refs['dataForm'].validate()
       if (isValid) {
         const adminLoginToken = store.admin().adminLoginToken
-        const tempData = Object.assign({}, this.temp);
+        const tempData = Object.assign({}, this.currentUser);
         const updateResp = await UserApi.updateUser(adminLoginToken, tempData)
         if (updateResp.data.code === 10000) {
-          const index = this.list.findIndex(v => v.id === this.temp.id);
-          this.list.splice(index, 1, this.temp);
+          const index = this.list.findIndex(v => v.id === this.currentUser.id);
+          this.list.splice(index, 1, this.currentUser);
           this.dialogFormVisible = false;
           ElNotification({
             title: 'Success',
@@ -408,20 +460,22 @@ export default defineComponent({
       }
     },
     async fetchInviteRelation(row) {
+      this.currentUser = Object.assign({}, row); // copy obj
+      this.inviteRelationVisible = true
       const adminLoginToken = store.admin().adminLoginToken
       const relationResp = await UserApi.getInviteRelation(adminLoginToken, row.id)
       if (relationResp.data.code === 10000) {
         const users = relationResp.data.data.users
         this.inviteUsers = users.filter(user => user.id !== row.id);
-        this.inviteRelationVisible = true
       }
     },
     async fetchAccountInfo(row) {
+      this.currentUser = Object.assign({}, row); // copy obj
+      this.accountVisible = true
       const adminLoginToken = store.admin().adminLoginToken
       const accountResp = await UserApi.getAccountInfo(adminLoginToken, row.id)
       if (accountResp.data.code === 10000) {
         this.currentAccount = accountResp.data.data.account
-        this.accountVisible = true
       }
     },
     async updateAccount() {
@@ -439,6 +493,7 @@ export default defineComponent({
       }
     },
     async fetchPasswordInfo(row) {
+      this.currentUser = Object.assign({}, row); // copy obj
       const adminLoginToken = store.admin().adminLoginToken
       const passwordResp = await UserApi.getPasswordInfo(adminLoginToken, row.id)
       if (passwordResp.data.code === 10000) {
@@ -462,6 +517,48 @@ export default defineComponent({
         ElMessage.error(updatePasswordResp.data.msg)
       }
     },
+    getRemoteBuyLink(autoBuyerId) {
+      return `${import.meta.env.VITE_SHOP_ENDPOINT}/#/remote/buy?autoBuyerId=${autoBuyerId}`
+    },
+    async copyRemoteBuyLink(autoBuyerId) {
+      const remoteBuyLink = this.getRemoteBuyLink(autoBuyerId);
+
+      if (remoteBuyLink) {
+        try {
+          // 使用 Clipboard API 复制文本到剪贴板
+          await navigator.clipboard.writeText(remoteBuyLink);
+          ElMessage.success('链接已复制！');
+        } catch (err) {
+          ElMessage.error('复制失败，请手动复制！');
+        }
+      }
+    },
+    handleShowRole(row) {
+      this.currentUser = Object.assign({}, row); // copy obj
+      this.changeRoleVisible = true
+    },
+    async updateRole() {
+      const adminLoginToken = store.admin().adminLoginToken
+      const updateRoleResp = await UserApi.updateRole(adminLoginToken, {
+        user_id: this.currentUser.id,
+        role: this.currentUser.role
+      })
+
+      if (updateRoleResp.data.code === 10000) {
+        this.changeRoleVisible = false
+
+        const index = this.list.findIndex(v => v.id === this.currentUser.id);
+        this.list.splice(index, 1, this.currentUser);
+        ElNotification({
+          title: 'Success',
+          message: '更新成功',
+          type: 'success',
+          duration: 2000
+        });
+      } else {
+        ElMessage.error("更新失败，请检查数值！")
+      }
+    }
   }
 });
 </script>

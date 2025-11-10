@@ -19,24 +19,29 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="用户ID" prop="user_id" align="center" width="200" >
+      <el-table-column label="用户ID" prop="user_id" align="center" width="150" >
         <template v-slot="{row}">
-          <span>{{ formatIdDisplay(row?.user_id) }}</span>
+          <span class="link-type" @click="handleShowDetail(row)">{{ formatIdDisplay(row?.user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出售数量" width="250px" align="center">
+      <el-table-column label="注册邮箱" width="200px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.amount }}</span>
+          <span class="link-type" @click="handleShowDetail(row)">{{ row.user?.email }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="剩余数量" width="250px" align="center">
+      <el-table-column label="出售数量" width="150px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.remain_amount }}</span>
+          <span>{{ row.amount }} USDT</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="剩余数量" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.remain_amount }} USDT</span>
         </template>
       </el-table-column>
       <el-table-column label="最低购买金额" width="150px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.min_sale_amount }}</span>
+          <span>{{ row.min_sale_amount }} USDT</span>
         </template>
       </el-table-column>
       <el-table-column label="卖场" width="150px" align="center">
@@ -51,24 +56,69 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="生成日期" width="150px" align="center">
+      <el-table-column label="生成时间" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template v-slot="{row, $index}">
-          <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
-            上线
+          <el-button :disabled="![0, 2].includes(row.status)" size="small" type="success" @click="handleModifyStatus(row, 1)">
+            上架
           </el-button>
-          <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            下线
+          <el-button :disabled="![1].includes(row.status)" size="small" type="warning" @click="handleModifyStatus(row, 0)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+            下架
+          </el-button>
+          <el-button :disabled="![1].includes(row.status)" size="small" type="danger" @click="handleModifyStatus(row, 2)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+            禁售
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
+
+    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible" width="400" align-center>
+      <el-form :model="temp" label-position="left" label-width="100px" style="width: 300px; margin-left:50px;">
+        <el-form-item label="用户ID">
+          <span>{{ formatIdDisplay(temp.user_id) }}</span>
+        </el-form-item>
+        <el-form-item label="注册邮箱">
+          <span>{{ temp.user?.email }}</span>
+        </el-form-item>
+        <el-form-item label="出售数量">
+          <span>{{ temp.amount }} USDT</span>
+        </el-form-item>
+        <el-form-item label="剩余数量">
+          <span>{{ temp.remain_amount }} USDT</span>
+        </el-form-item>
+        <el-form-item label="最低购买金额">
+          <span>{{ temp.min_sale_amount }} USDT</span>
+        </el-form-item>
+        <el-form-item label="卖场">
+          <span>{{ formatPaymentMethod(temp.payment_method) }}</span>
+        </el-form-item>
+        <el-form-item label="状态">
+          <template v-slot="{row}">
+            <el-tag :type="statusFilterMap[temp.status]">
+              {{ statusMap[temp.status] }}
+            </el-tag>
+          </template>
+        </el-form-item>
+        <el-form-item label="生成时间">
+          <template v-slot="{row}">
+            <span>{{ parseTime(temp.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
+          </template>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="tw-flex tw-justify-start tw-ml-40">
+          <el-button type="primary" @click="dialogFormVisible = false">
+            确认
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
 
   </div>
 </template>
@@ -90,12 +140,20 @@ const paymentMethodOptions = [
   { key: 'bank', display_name: '银行卡' },
 ];
 const statusMap = {
-  '0': '已下线',
-  '1': '正常',
+  '0': '已下架',
+  '1': '在售',
+  '2': '禁售',
+  '3': '锁库存下架',
+  '4': '售罄',
+  '5': '已撤单',
 }
 const statusFilterMap = {
-  '0': 'danger',
+  '0': 'warning',
   '1': 'success',
+  '2': 'danger',
+  '3': 'default',
+  '4': 'primary',
+  '5': 'info',
 };
 
 export default defineComponent({
@@ -120,6 +178,12 @@ export default defineComponent({
       paymentMethodOptions,
       statusMap,
       statusFilterMap,
+      dialogStatus: '',
+      textMap: {
+        detail: '详情',
+      },
+      dialogFormVisible: false,
+      temp: {},
     };
   },
   created() {
@@ -174,6 +238,11 @@ export default defineComponent({
           duration: 2000
         });
       }
+    },
+    handleShowDetail(row) {
+      this.temp = Object.assign({}, row); // copy obj
+      this.dialogStatus = 'detail';
+      this.dialogFormVisible = true;
     },
   }
 });

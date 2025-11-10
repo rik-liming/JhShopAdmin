@@ -99,4 +99,15 @@ export default defineComponent({
 .pagination-container.hidden {
   display: none;
 }
+
+/* 仅在小屏启用换行 */
+@media (max-width: 768px) {
+  :deep(.el-pagination) {
+    display: flex !important;
+    flex-wrap: wrap !important; /* 超出一行自动换行 */
+    justify-content: center !important; /* 居中显示 */
+    row-gap: 16px !important; /* 行间距 */
+    column-gap: 8px !important; /* 列间距 */
+  }
+}
 </style>

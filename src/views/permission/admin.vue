@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.user_name" clearable placeholder="用户名" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
+      <el-input v-model="listQuery.user_name" clearable placeholder="登录名" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
       <el-select v-model="listQuery.role" placeholder="角色" clearable class="filter-item" style="width: 130px; margin-right: 8px;">
         <el-option v-for="item in roleTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select>
@@ -19,12 +19,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="200" >
-        <template v-slot="{row}">
-          <span>{{ row.id }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户名" width="150px" align="center">
+      <el-table-column label="用户名" width="200" align="center">
         <template v-slot="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
         </template>
@@ -52,10 +47,7 @@
             启用
           </el-button>
           <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            禁用
-          </el-button>
-          <el-button type="primary" size="small" @click="handleUpdate(row)">
-            编辑
+            封禁
           </el-button>
         </template>
       </el-table-column>
@@ -123,11 +115,11 @@ const roleTypeMap = {
   'superAdmin': '超级管理员',
 }
 const statusOptions = [
-  { key: 0, display_name: '禁用' },
+  { key: 0, display_name: '封禁' },
   { key: 1, display_name: '正常' },
 ];
 const statusMap = {
-  '0': '已禁用',
+  '0': '已封禁',
   '1': '正常',
 }
 const statusFilterMap = {

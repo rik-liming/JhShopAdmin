@@ -35,27 +35,29 @@
       highlight-current-row
       style="width: 100%; height: 580px; overflow: auto;"
     >
-      <el-table-column label="日期" width="250px" align="center">
+      <el-table-column label="日期" width="300px" align="center">
         <template v-slot="{row}">
           <span>{{ parseTime(row.report_date, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="代理ID" align="center" width="250px" >
+      <el-table-column label="买家ID" align="center" width="300px" >
         <template v-slot="{row}">
           <span>{{ formatIdDisplay(row?.user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" width="250px" align="center">
+      <el-table-column label="订单状态" width="300px" align="center">
         <template v-slot="{row}">
-          <span>成功</span>
+          <el-tag type="success">
+            {{ `成功` }}
+          </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="日成交笔数" width="250px" align="center">
+      <el-table-column label="日成交笔数" width="300px" align="center">
         <template v-slot="{row}">
           <span>{{ row.order_count }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="日成交总额" width="250px" align="center">
+      <el-table-column label="日成交总额" width="290px" align="center">
         <template v-slot="{row}">
           <span>{{ row.total_amount }}</span>
         </template>
@@ -90,12 +92,13 @@ const statusFilterMap = {
 };
 
 export default defineComponent({
-  name: 'AgentReport',
+  name: 'AutoBuyerReport',
   directives: { waves },
   data() {
     return {
       iconSearch: markRaw(Search),
       iconEdit: markRaw(Edit),
+      iconCalendar: markRaw(Calendar),
       tableKey: 0,
       list: null,
       listLoading: true,

@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onUnmounted } from 'vue';
 import { ElMessageBox } from 'element-plus';
 import emitter from '@/event/eventBus';
 import { useRouter, useRoute } from 'vue-router';
@@ -52,30 +52,7 @@ const messageDialogVisible = ref(false)
 const messageDialogTitle = ref('')
 const messageDialogTableKey = ref(Math.random())
 
-onMounted(() => {
-
-  // 监听用户角色变更事件
-//   emitter.on('user:roleChanged', async (data: any) => {
-
-// 	// 如果是自己
-// 	if (data.user_id === userStore?.user?.value?.id) {
-// 		forceLogoutTitle.value = "角色变更"
-// 		forceLogoutMsg.value = "您的角色已变更，请重新登录"
-// 		forceLogoutVisible.value = true;
-// 	}
-//   });
-
-  // 监听交易状态变更事件
-//   emitter.on('transaction:updated', async (data: any) => {
-// 	// 如果是自己
-// 	if (data.user_id === userStore?.user?.value?.id) {
-// 		messageDialogTitle.value = "系统消息"
-// 		messageDialogVisible.value = true;
-// 	}
-//   });
-
-  // 监听业务更新事件
-  emitter.on('business:updated', async (data: any) => {
+const onBusinessUpdated = async(data) => {
 	messageDialogTitle.value = "待处理业务消息"
 	
 	updateTableKey()
@@ -83,19 +60,32 @@ onMounted(() => {
 	if (!messageDialogVisible.value) {
 		messageDialogVisible.value = true;
 	}
-  });
+}
 
-  // 监听消息弹框状态变更事件
-  emitter.on('message:read', async (data: any) => {
+const onMessageRead = async(data) => {
 	// 如果是自己
 	if (data.admin_id === adminStore?.admin?.value?.id) {
 		messageDialogVisible.value = false;	
 	}
-  });
+}
+
+onMounted(() => {
+
+  // 监听业务更新事件
+  emitter.on('business:updated', onBusinessUpdated);
+
+  // 监听消息弹框状态变更事件
+  emitter.on('message:read', onMessageRead);
   
 
   // 可以在这里继续监听其他全局事件
   // emitter.on('user:assetChanged', ...)
+});
+
+onUnmounted(() => {
+  // 移除事件，防止重复监听
+  emitter.off('business:updated', onBusinessUpdated);
+  emitter.off('message:read', onMessageRead);
 });
 
 const logoutHandle = async() => {

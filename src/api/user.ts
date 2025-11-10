@@ -116,3 +116,18 @@ export async function updatePasswordInfo(adminLoginToken, updateParams) {
     })
     return response
 }
+
+// request update role
+export async function updateRole(adminLoginToken, updateParams) {
+    const needParams = pick(updateParams, [
+        'user_id',
+        'role',
+    ])
+
+    const response = await requestBase.put('/api/admin/user/role', needParams, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

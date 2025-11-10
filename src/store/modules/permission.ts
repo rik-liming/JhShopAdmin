@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia';
 import { asyncRoutes, firstConstantRoutes, lastConstantRoutes } from '@/router';
 import type { RouteRecordRaw } from 'vue-router';
+import { useStorage } from '@vueuse/core'
+import * as RoleApi from '@/api/role'
 
 interface IPermissionState {
   routes: Array<RouteRecordRaw>;
   addRoutes: Array<RouteRecordRaw>;
-  routerKeys: string[];
 }
 
 /**
@@ -13,29 +14,32 @@ interface IPermissionState {
  * @param roles
  * @param route
  */
-function hasPermission(roles:string[], route:RouteRecordRaw):boolean {
-  // if (route.meta && route.meta.roles) {
-  //   const rolesArr = route.meta.roles as string[];
-  //   return roles.some(role => rolesArr.includes(role));
-  // } else {
-  //   return true;
-  // }
-    return true;
+function hasMenuPermission(route: RouteRecordRaw, routerKeys: string[]):boolean {
+  return routerKeys.includes(route.routerKey)
+}
+
+/**
+ * 判断是否有操作权限
+ * @param actionKey
+ * @param routerKeys 
+ */
+function hasActionPermission(actionKey: string, routerKeys: string[]):boolean {
+  return routerKeys.includes(actionKey)
 }
 
 /**
  * Filter asynchronous routing tables by recursion
  * @param routes asyncRoutes
- * @param roles
+ * @param role
  */
-export function filterAsyncRoutes(routes:RouteRecordRaw[], roles: string[]): Array<RouteRecordRaw> {
+export function filterAsyncRoutes(routes:RouteRecordRaw[], routerKeys: string[]): Array<RouteRecordRaw> {
   const res:Array<RouteRecordRaw> = [];
 
   routes.forEach(route => {
     const tmp = { ...route };
-    if (hasPermission(roles, tmp)) {
+    if (hasMenuPermission(tmp, routerKeys)) {
       if (tmp.children) {
-        tmp.children = filterAsyncRoutes(tmp.children, roles);
+        tmp.children = filterAsyncRoutes(tmp.children, routerKeys);
       }
       res.push(tmp);
     }
@@ -48,27 +52,54 @@ export default defineStore({
   id: 'permission',
   state: ():IPermissionState => ({
     routes: [],
-    addRoutes: [],
-    routerKeys: [],
+    addRoutes: []
   }),
   getters: {},
   actions: {
     setRoutes(routes: RouteRecordRaw[]) {
       this.addRoutes = routes;
-      this.routes = firstConstantRoutes.concat(routes).concat(lastConstantRoutes);
+      this.routes = routes;
     },
-    generateRoutes(roles: string[]) {
+    async generateRoutes(adminLoginToken: string, adminId: string, role: string) {
       let accessedRoutes;
-      if (roles.includes('superAdmin')) {
+      if (role === 'superAdmin') {
         accessedRoutes = asyncRoutes || [];
       } else {
-        accessedRoutes = filterAsyncRoutes(asyncRoutes, roles);
+        const routerKeys = await this.loadRouterKeys(adminLoginToken, adminId)
+        accessedRoutes = filterAsyncRoutes(asyncRoutes, routerKeys);
       }
+      accessedRoutes = firstConstantRoutes.concat(accessedRoutes).concat(lastConstantRoutes)
       this.setRoutes(accessedRoutes);
       return accessedRoutes;
     },
-    setRouterKeys(routerKeys: string[]) {
-      this.setRouterKeys(routerKeys)
+    async fetchRouterKeys(adminLoginToken: string, adminId: string) {
+      const resp = await RoleApi.getRoleRouterKeys(adminLoginToken)
+      if (resp.data.code === 10000) {
+        const routerKeys = resp.data.data.routerKeys;
+        const storageKey = `routerKeys_admin_${adminId}`;
+        const storage = useStorage<string[]>(storageKey, []);
+        storage.value = routerKeys
+        return routerKeys
+      }
+      return []
+    },
+    async loadRouterKeys(adminLoginToken: string, adminId: string) {
+      if (!adminLoginToken || !adminId) {
+        return []
+      }
+
+      const storageKey = `routerKeys_admin_${adminId}`;
+      const storage = useStorage<string[]>(storageKey, []);
+      if (!storage.value || storage.value == 0) {
+        const latestRouterKeys = await this.fetchRouterKeys(adminLoginToken, adminId)
+        return latestRouterKeys
+      }
+      return storage.value
+    },
+    clearRouterKeys(adminId: string) {
+      const storageKey = `routerKeys_admin_${adminId}`;
+      const storage = useStorage<string[]>(storageKey, []);
+      storage.value = [];
     }
   }
 });

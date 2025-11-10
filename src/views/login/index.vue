@@ -214,10 +214,14 @@ export default defineComponent({
     },
     async submitOtp() {
       const adminStore = store.admin()
+      const permissionStore = store.permission()
       try {
         const response = await adminStore.verifyOtp(this.loginForm.user_name, this.otp)
         if (response.data.code == 10000) {
           this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+
+          // 登录成功，请求权限
+          // await permissionStore.fetchRouterKeys(adminStore.adminLoginToken, adminStore?.admin?.value?.id)
         } else {
           ElMessage.error(response.data.msg);
         }

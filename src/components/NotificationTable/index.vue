@@ -137,6 +137,10 @@ onMounted(() => {
 const router = useRouter();
 const handleRowClick = async(row) => {
 
+  if (!row.id) {
+    return
+  }
+
   // 标记已读
   await MessageApi.markAsRead(adminStore.adminLoginToken, row.id)
   emitter.emit('message:read', {'admin_id': adminStore.admin?.value?.id });

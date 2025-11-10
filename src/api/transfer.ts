@@ -4,7 +4,7 @@ import { exactIdFromDisplay } from '@/utils/tool'
 
 // request transfer list
 export async function fetchTransferList(adminLoginToken, queryParams) {
-    const { page, page_size, sender_user_id, receiver_user_id } = queryParams;
+    const { page, page_size, sender_user_id, receiver_user_id, display_transfer_id } = queryParams;
 
     // 构建请求的基础 URL
     let requestUrl = `/api/admin/transfer/page?page=${page}&page_size=${page_size}`;
@@ -13,6 +13,9 @@ export async function fetchTransferList(adminLoginToken, queryParams) {
 	}
 	if (receiver_user_id) {
         requestUrl += `&receiver_user_id=${exactIdFromDisplay(receiver_user_id)}`;
+    }
+    if (display_transfer_id) {
+        requestUrl += `&display_transfer_id=${display_transfer_id}`;
     }
     const response = await requestBase.get(requestUrl, {
         headers: {

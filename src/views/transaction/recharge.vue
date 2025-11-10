@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.user_id" placeholder="用户ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
+      <el-input v-model="listQuery.display_recharge_id" placeholder="订单ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" clearable />
+      <el-input v-model="listQuery.user_id" placeholder="用户ID" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" clearable />
       <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
         <span v-waves>搜索</span>
       </el-button>
@@ -69,14 +70,16 @@
           <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template v-slot="{row, $index}">
-          <el-button :disabled="row.status !== 0" size="small" type="success" @click="handleModifyStatus(row, 1)">
-            通过
-          </el-button>
-          <el-button :disabled="row.status !== 0" size="small" type="danger" @click="handleModifyStatus(row, -1)">
-            驳回
-          </el-button>
+          <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
+            <el-button :disabled="row.status !== 0" size="small" type="success" @click="handleModifyStatus(row, 1)">
+              通过
+            </el-button>
+            <el-button :disabled="row.status !== 0" size="small" type="danger" @click="handleModifyStatus(row, -1)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+              驳回
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -189,6 +192,7 @@ export default defineComponent({
         page: 1,
         page_size: 20,
         user_id: '',
+        order_id: '',
       },
       isRequesting: false,
       statusMap,

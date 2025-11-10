@@ -1,5 +1,5 @@
 {
-  "name": "vue3-element-admin",
+  "name": "jh-admin",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -8,9 +8,11 @@
     "tw:build": "tailwindcss -i ./src/input.css -o ./dist/output.css",
     "tw:watch": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
     "dev:test": "vite --mode dev_test",
-    "dev:prod": "vite --mode dev_prod",
+    "dev:staging": "vite --mode dev_staging",
+    "dev:production": "vite --mode dev_production",
     "build:test": "vite build --mode build_test",
-    "build:prod": "vite build --mode build_prod",
+    "build:staging": "vite build --mode build_staging",
+    "build:production": "vite build --mode build_production",
     "preview": "vite preview --port 4173",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
   },

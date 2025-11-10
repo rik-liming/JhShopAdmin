@@ -56,13 +56,16 @@ export const firstConstantRoutes:RouteRecordRaw[] = [
     component: () => import('@/views/login/index.vue'),
     meta: { hidden: true },
     beforeEnter: async(to, from, next) => {
-      try {
-        await store.admin().logout();
-        next('/login'); // 跳转到登录页面
-      } catch (error) {
-        console.error('Logout failed:', error);
-        next('/login'); // 如果注销失败，也跳转到登录页面
+      const adminStore = store.admin();
+      const permissionStore = store.permission();
+      const adminId = adminStore.admin?.value?.id;
+
+      await store.admin().logout();
+      if (adminId) {
+        await permissionStore.clearRouterKeys(adminId);
       }
+
+      next('/login')
     } 
   },
   {
@@ -110,8 +113,8 @@ export const asyncRoutes:RouteRecordRaw[] = [
   {
     path: '/setting',
     name: 'Setting',
+    routerKey: '/setting',
     meta: { 
-      roles: ['admin', 'superAdmin'],
       title: '常规管理', 
       icon: markRaw(IconSetting),
       alwaysShow: true, // will always show the root menu
@@ -122,17 +125,18 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'system',
         component: () => import('@/views/setting/system.vue'),
         name: 'SettingSystem',
+        routerKey: '/setting/system',
         meta: { 
           title: '系统配置', 
           affix: true,
           needIndent: true,
-          roles: ['superAdmin'],
         }
       },
       {
         path: 'person',
         component: () => import('@/views/setting/person.vue'),
         name: 'SettingPerson',
+        routerKey: '/setting/person',
         meta: { 
           title: '个人资料', 
           affix: true,
@@ -144,28 +148,30 @@ export const asyncRoutes:RouteRecordRaw[] = [
   {
     path: '/permission',
     name: 'Permission',
+    routerKey: '/permission',
     meta: { 
-      roles: ['superAdmin'],
       title: '权限管理', 
       icon: markRaw(IconPermission),
       alwaysShow: true, // will always show the root menu
     },
     component: Layout,
     children: [
-      // {
-      //   path: 'role',
-      //   component: () => import('@/views/permission/role.vue'),
-      //   name: 'PermissionRole',
-      //   meta: { 
-      //     title: '角色管理', 
-      //     affix: true,
-      //     needIndent: true,
-      //   }
-      // },
+      {
+        path: 'role',
+        component: () => import('@/views/permission/role.vue'),
+        name: 'PermissionRole',
+        routerKey: '/permission/role',
+        meta: { 
+          title: '角色管理', 
+          affix: true,
+          needIndent: true,
+        }
+      },
       {
         path: 'admin',
         component: () => import('@/views/permission/admin.vue'),
         name: 'PermissionAdmin',
+        routerKey: '/permission/admin',
         meta: { 
           title: '管理员管理', 
           affix: true,
@@ -177,9 +183,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
   {
     path: '/user',
     name: 'User',
-    meta: { 
-      roles: ['admin', 'superAdmin']
-    },
+    routerKey: '/user',
     component: Layout,
     redirect: '/user/index',
     children: [
@@ -187,6 +191,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: '',
         component: () => import('@/views/user/index.vue'),
         name: 'UserIndex',
+        routerKey: '/user/index',
         meta: { 
           title: '会员管理', 
           icon: 'user', 
@@ -199,8 +204,8 @@ export const asyncRoutes:RouteRecordRaw[] = [
   {
     path: '/transaction',
     name: 'transaction',
+    routerKey: '/transaction',
     meta: { 
-      roles: ['admin', 'superAdmin'],
       title: '财务管理', 
       icon: markRaw(IconPermission),
       alwaysShow: true, // will always show the root menu
@@ -223,6 +228,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'recharge',
         component: () => import('@/views/transaction/recharge.vue'),
         name: 'TransactionRecharge',
+        routerKey: '/transaction/recharge',
         meta: { 
           title: '充值管理', 
           affix: true,
@@ -234,6 +240,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'transfer',
         component: () => import('@/views/transaction/transfer.vue'),
         name: 'TransactionTransfer',
+        routerKey: '/transaction/transfer',
         meta: { 
           title: '转账管理', 
           affix: true,
@@ -245,6 +252,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'withdraw',
         component: () => import('@/views/transaction/withdraw.vue'),
         name: 'TransactionWithdraw',
+        routerKey: '/transaction/withdraw',
         meta: { 
           title: '提现管理', 
           affix: true,
@@ -257,9 +265,9 @@ export const asyncRoutes:RouteRecordRaw[] = [
   {
     path: '/order',
     name: 'Order',
+    routerKey: '/order',
     meta: { 
       alwaysShow: true, // will always show the root menu
-      roles: ['admin', 'superAdmin'],
       title: '订单管理', 
       icon: 'shopping',
       reddotKey: 'order',
@@ -270,6 +278,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'listing',
         component: () => import('@/views/order/listing.vue'),
         name: 'OrderListing',
+        routerKey: '/order/listing',
         meta: { 
           title: '挂单管理', 
           affix: true,
@@ -280,6 +289,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'normal',
         component: () => import('@/views/order/normal.vue'),
         name: 'OrderNormal',
+        routerKey: '/order/normal',
         meta: { 
           title: '常规订单', 
           affix: true,
@@ -291,6 +301,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'auto',
         component: () => import('@/views/order/auto.vue'),
         name: 'OrderAuto',
+        routerKey: '/order/auto',
         meta: { 
           title: '自动化订单', 
           affix: true,
@@ -303,9 +314,9 @@ export const asyncRoutes:RouteRecordRaw[] = [
   {
     path: '/report',
     name: 'Report',
+    routerKey: '/report',
     meta: { 
       alwaysShow: true, // will always show the root menu
-      roles: ['admin', 'superAdmin'],
       title: '报表管理', 
       icon: markRaw(IconReport),
     },
@@ -315,6 +326,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'agent',
         component: () => import('@/views/report/agent.vue'),
         name: 'AgentReport',
+        routerKey: '/report/agent',
         meta: { 
           title: '代理', 
           affix: true,
@@ -325,6 +337,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'auto_buyer',
         component: () => import('@/views/report/autoBuyer.vue'),
         name: 'AutoBuyerReport',
+        routerKey: '/report/auto_buyer',
         meta: { 
           title: '自动化买家', 
           affix: true,
@@ -335,6 +348,7 @@ export const asyncRoutes:RouteRecordRaw[] = [
         path: 'buyer',
         component: () => import('@/views/report/buyer.vue'),
         name: 'BuyerReport',
+        routerKey: '/report/buyer',
         meta: { 
           title: '系统买家', 
           affix: true,
@@ -381,7 +395,15 @@ export const lastConstantRoutes:RouteRecordRaw[] = [
       }
     ],
     beforeEnter: async(to, from, next) => {
+      const adminStore = store.admin();
+      const permissionStore = store.permission();
+      const adminId = adminStore.admin?.value?.id;
+
       await store.admin().logout();
+      if (adminId) {
+        await permissionStore.clearRouterKeys(adminId);
+      }
+
       next('/login')
     } 
   },
