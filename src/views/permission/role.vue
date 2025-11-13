@@ -169,24 +169,18 @@
     </el-dialog>
 
     <!-- 权限树弹窗 -->
-    <el-dialog :title="textMap[treeDialogStatus] + ' - ' + currentRole.name" v-model="treeDialogFormVisible" :width="getAdjustWidth(400, 400, 1000)" align-center>
-      <div>
-        <!-- <tree 
+    <el-dialog :title="textMap[treeDialogStatus] + ' - ' + currentRole.name" v-model="treeDialogFormVisible" :width="getAdjustWidth(400, 400, 460)" align-center>
+      <div class="tw-h-[300px] tw-overflow-y-auto">
+        <tree 
           :privilegeTree="privilegeTree" 
           ref="privilegeTreeRef"
           :role="currentRole.role" 
           :treeKey="Math.random()"
           :checkedRules="checkedRules"
-        /> -->
-
-        <CustomTree
-          ref="privilegeTreeRef"
-          :treeData="privilegeTree"
-          :checkedRules="checkedRules"
         />
       </div>
       <template #footer>
-        <div class="tw-flex tw-justify-start tw-ml-28 tw-gap-8">
+        <div class="tw-flex tw-justify-start tw-ml-40 tw-gap-8">
           <el-button @click="treeDialogFormVisible = false">取消</el-button>
           <el-button type="primary" @click="savePrivilegeTree">确认</el-button>
         </div>
@@ -206,7 +200,6 @@ import Pagination from '@/components/Pagination'
 import { parseTime } from '@/utils'
 import { formatIdDisplay, getAdjustWidth } from '@/utils/tool'
 import Tree from './components/Tree.vue'
-import CustomTree from './components/CustomTree.vue'
 
 // 状态映射
 const statusMap = { '0': '已封禁', '1': '正常' }
@@ -364,12 +357,27 @@ const handleShowTree = async(row) => {
   }
 }
 
-const savePrivilegeTree = () => {
+/**
+ * 更新权限
+ */
+const savePrivilegeTree = async() => {
 
-  // 2) 调用子组件暴露的方法（getSelected）
-  const selected = privilegeTreeRef.value.getSelected?.() ?? []
-  console.log(selected)
-
+  try {
+    const selected = privilegeTreeRef.value.getSelectedRules?.() ?? []
+    const updateResp = await RoleApi.updateRoleRules(adminStore.adminLoginToken, { 
+      ruleIds: selected,
+      role: currentRole.role,
+    })
+    if (updateResp.data.code === 10000) {
+      ElMessage.success('更新成功')
+      treeDialogFormVisible.value = false
+    } else {
+      ElMessage.error(updateResp.data.msg)
+    } 
+  } catch (error) {
+    ElMessage.error('更新失败')
+  }
+  
 }
 
 // 初始化
