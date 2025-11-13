@@ -44,6 +44,26 @@ export async function updateAdminInfo(adminLoginToken, data) {
     return response
 }
 
+// create admin
+export async function createAdmin(adminLoginToken, data) {
+    const response = await requestBase.post('/api/admin', data, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// update other admin info
+export async function updateOtherAdminInfo(adminLoginToken, data) {
+    const response = await requestBase.put('/api/admin/other', data, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
 // regen secret
 export async function regenSecret(adminLoginToken) {
     const response = await requestBase.post('/api/admin/secret/regen', {}, {

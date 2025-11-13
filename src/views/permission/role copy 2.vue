@@ -23,6 +23,9 @@ import { ref, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as PrivilegeApi from '@/api/privilege'
 import * as RoleApi from '@/api/role'
+import store from '@/store'
+
+const adminStore = store.admin()
 
 const role = 'admin'
 const roleName = '管理员'
@@ -34,8 +37,10 @@ const treeData = ref([])
 const checkedKeys = ref([])
 
 onMounted(async () => {
-  const { data: tree } = await PrivilegeApi.getPrivilegesTree()
-  const { data: checked } = await RoleApi.getRoleRules('', role)
+  const treeResp = await PrivilegeApi.getPrivilegesTree(adminStore.adminLoginToken)
+  const { tree } = treeResp.data.data
+  const ruleResp = await RoleApi.getRoleRules(adminStore.adminLoginToken, role)
+  const { data: checked } = ruleResp.data
   treeData.value = tree
   checkedKeys.value = checked
 

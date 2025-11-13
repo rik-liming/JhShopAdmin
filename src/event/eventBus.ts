@@ -2,6 +2,9 @@ import mitt from 'mitt';
 
 type Events = {
 	'business:updated': { };
+	'admin:statusChanged': { admin_id: number };
+	'admin:roleStatusChanged': { role: string };
+	
 //   'asset:changed': { user_id: number; delta: number };
   // ...其他类型
 };

@@ -169,19 +169,13 @@
     </el-dialog>
 
     <!-- 权限树弹窗 -->
-    <el-dialog :title="textMap[treeDialogStatus] + ' - ' + currentRole.name" v-model="treeDialogFormVisible" :width="getAdjustWidth(400, 400, 1000)" align-center>
+    <el-dialog :title="textMap[treeDialogStatus] + ' - ' + currentRole.name" v-model="treeDialogFormVisible" :width="getAdjustWidth(400, 400, 600)" align-center>
       <div>
-        <!-- <tree 
+        <tree 
           :privilegeTree="privilegeTree" 
           ref="privilegeTreeRef"
           :role="currentRole.role" 
           :treeKey="Math.random()"
-          :checkedRules="checkedRules"
-        /> -->
-
-        <CustomTree
-          ref="privilegeTreeRef"
-          :treeData="privilegeTree"
           :checkedRules="checkedRules"
         />
       </div>
@@ -206,7 +200,6 @@ import Pagination from '@/components/Pagination'
 import { parseTime } from '@/utils'
 import { formatIdDisplay, getAdjustWidth } from '@/utils/tool'
 import Tree from './components/Tree.vue'
-import CustomTree from './components/CustomTree.vue'
 
 // 状态映射
 const statusMap = { '0': '已封禁', '1': '正常' }

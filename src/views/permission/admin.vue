@@ -1,15 +1,38 @@
 <template>
   <div class="app-container">
+    <!-- 筛选区域 -->
     <div class="filter-container">
-      <el-input v-model="listQuery.user_name" clearable placeholder="登录名" style="width: 200px; margin-right: 4px;" class="filter-item" @keyup.enter="handleFilter" />
-      <el-select v-model="listQuery.role" placeholder="角色" clearable class="filter-item" style="width: 130px; margin-right: 8px;">
-        <el-option v-for="item in roleTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      <el-input
+        v-model="listQuery.user_name"
+        clearable
+        placeholder="登录名"
+        style="width: 200px; margin-right: 4px;"
+        class="filter-item"
+        @keyup.enter="handleFilter"
+      />
+      <el-select
+        v-model="listQuery.role"
+        placeholder="角色"
+        clearable
+        class="filter-item"
+        style="width: 130px; margin-right: 8px;"
+      >
+        <el-option
+          v-for="item in roleTypeOptions"
+          :key="item.role"
+          :label="`${item.name}(${item.role})`"
+          :value="item.role"
+        />
       </el-select>
       <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
-        <span v-waves>搜索</span>
+        搜索
+      </el-button>
+      <el-button class="filter-item" type="success" :icon="iconPlus" @click="handleCreateAdmin">
+        添加管理员
       </el-button>
     </div>
 
+    <!-- 表格 -->
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -19,257 +42,253 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="用户名" width="200" align="center">
-        <template v-slot="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.user_name }}</span>
+      <el-table-column label="登录名" width="300" align="center">
+        <template #default="{ row }">
+          <span class="link-type" @click="handleShowDetail(row)">{{ row.user_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="角色" width="150px" align="center">
-        <template v-slot="{row}">
+
+      <el-table-column label="角色" width="300" align="center">
+        <template #default="{ row }">
           <span>{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" class-name="status-col" width="100" align="center">
-        <template v-slot="{row}">
+
+      <el-table-column label="状态" width="250" align="center">
+        <template #default="{ row }">
           <el-tag :type="statusFilterMap[row.status]">
             {{ statusMap[row.status] }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="注册日期" width="150px" align="center">
-        <template v-slot="{row}">
+
+      <el-table-column label="创建时间" width="300" align="center">
+        <template #default="{ row }">
           <span>{{ parseTime(row.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px">
-        <template v-slot="{row, $index}">
-          <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
-            启用
-          </el-button>
-          <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)">
-            封禁
-          </el-button>
+
+      <el-table-column label="操作" fixed="right" align="center" width="300">
+        <template #default="{ row }">
+          <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
+            <el-button
+              :disabled="row.status == 1 || row.user_name === adminStore.admin?.value?.userName"
+              size="small"
+              type="success"
+              @click="handleModifyStatus(row, 1)"
+            >
+              启用
+            </el-button>
+            <el-button
+              :disabled="row.status == 0 || row.user_name === adminStore.admin?.value?.userName"
+              size="small"
+              type="danger"
+              class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0"
+              @click="handleModifyStatus(row, 0)"
+            >
+              封禁
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" v-model:page="listQuery.page" v-model:limit="listQuery.page_size" @pagination="handlePageChange" />
+    <!-- 分页 -->
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      v-model:page="listQuery.page"
+      v-model:limit="listQuery.page_size"
+      @pagination="handlePageChange"
+    />
 
-    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="ID" prop="id">
-          <el-input v-model="temp.id" disabled />
+    <!-- 详情弹窗 -->
+    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible" width="400">
+      <el-form label-position="left" label-width="100px" style="width: 300px; margin-left:50px;">
+        <el-form-item label="登录名">
+          <span>{{ temp.user_name }}</span>
         </el-form-item>
-        <el-form-item label="用户名" prop="user_name">
-          <el-input v-model="temp.user_name" />
-        </el-form-item>
-        <el-form-item label="角色" prop="role" v-if="temp.role !== 'platform'">
-          <el-select v-model="temp.role" class="filter-item" placeholder="请选择角色">
-            <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="注册时间" prop="created_at">
-          <el-date-picker v-model="temp.created_at" type="datetime" disabled />
+        <el-form-item label="角色">
+          <span>{{ roleTypeMap[temp.role] }}</span>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select" disabled>
-            <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+          <el-tag :type="statusFilterMap[temp.status]">
+            {{ statusMap[temp.status] }}
+          </el-tag>
+        </el-form-item>
+        <el-form-item label="创建时间">
+          <span>{{ parseTime(temp.created_at, '{y}-{m}-{d} {h}:{i}') }}</span>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="tw-flex tw-justify-start tw-ml-40">
+          <el-button type="primary" @click="dialogFormVisible = false">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 创建弹窗 -->
+    <el-dialog :title="textMap[createDialogStatus]" v-model="createDialogFormVisible" width="400" align-center>
+      <el-form label-position="left" label-width="100px" style="width: 300px; margin-left:50px;">
+        <el-form-item label="登录名">
+          <el-input v-model="preCreateAdmin.user_name" placeholder="请输入管理员登录名" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input type="password" v-model="preCreateAdmin.password" placeholder="请输入管理员密码" />
+        </el-form-item>
+        <el-form-item label="确认密码">
+          <el-input type="password" v-model="preCreateAdmin.confirm_password" placeholder="请再次输入密码" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="preCreateAdmin.role" class="filter-item" placeholder="请选择角色">
+            <el-option v-for="item in roleTypeOptions" :key="item.role" :label="item.name" :value="item.role" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">
-            取消
-          </el-button>
-          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-            确认
-          </el-button>
+        <div class="tw-flex tw-justify-start tw-ml-28 tw-gap-8">
+          <el-button @click="createDialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="createAdmin">确认</el-button>
         </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import { defineComponent, markRaw } from 'vue';
-import { Search, Edit } from '@element-plus/icons-vue';
-import * as AdminApi from '@/api/admin';
-import store from '@/store';
-import waves from '@/directive/waves'; // waves directive
-import { parseTime } from '@/utils';
-import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
-import { ElMessage } from 'element-plus';
+<script setup lang="ts">
+import { ref, reactive, onMounted, markRaw } from 'vue'
+import { Search, Edit, Plus } from '@element-plus/icons-vue'
+import * as RoleApi from '@/api/role'
+import * as AdminApi from '@/api/admin'
+import store from '@/store'
+import { ElMessage, ElNotification } from 'element-plus'
+import Pagination from '@/components/Pagination'
+import { parseTime } from '@/utils'
 import { formatIdDisplay } from '@/utils/tool'
 
-const roleTypeOptions = [
-  { key: 'admin', display_name: '管理员' },
-  { key: 'superAdmin', display_name: '超级管理员' },
-];
-const canSelectRoleTypeOptions = [
-  { key: 'admin', display_name: '管理员' },
-  { key: 'superAdmin', display_name: '超级管理员' },
-];
-const roleTypeMap = {
-  'admin': '管理员',
-  'superAdmin': '超级管理员',
-}
-const statusOptions = [
-  { key: 0, display_name: '封禁' },
-  { key: 1, display_name: '正常' },
-];
-const statusMap = {
-  '0': '已封禁',
-  '1': '正常',
-}
-const statusFilterMap = {
-  '0': 'danger',
-  '1': 'success',
-};
+// 状态映射
+const statusMap = { '0': '已封禁', '1': '正常' }
+const statusFilterMap = { '0': 'danger', '1': 'success' }
+const textMap = { detail: '详情', create: '创建' }
 
-export default defineComponent({
-  name: 'AdminPage',
-  components: { Pagination },
-  directives: { waves },
-  data() {
-    return {
-      iconSearch: markRaw(Search),
-      iconEdit: markRaw(Edit),
-      tableKey: 0,
-      list: null,
-      total: 0,
-      listLoading: true,
-      listQuery: {
-        page: 1,
-        page_size: 20,
-        user_name: '',
-        role: '',
-      },
-      isRequesting: false,
-      roleTypeOptions,
-      roleTypeMap,
-      canSelectRoleTypeOptions,
-      statusOptions,
-      statusMap,
-      statusFilterMap,
-      temp: {
-        id: undefined,
-        user_name: '',
-        role: '',
-        status: 1,
-        created_at: undefined
-      },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: '编辑',
-        create: '新建'
-      },
-      rules: {
-      },
-    };
-  },
-  created() {
-    this.getList();
-  },
-  methods: {
-    parseTime,
-    formatIdDisplay,
-    async getList() {
-      this.listLoading = true;
-      const adminLoginToken = store.admin().adminLoginToken
-      try {
-        const listResp = await AdminApi.fetchAdminList(adminLoginToken, this.listQuery)
-        if (listResp.data.code === 10000) {
-          this.list = listResp.data.data.admins;
-          this.total = listResp.data.data.total;
-        } else {
-          ElMessage.error(listResp.data.msg)
-        } 
-      } catch (error) {
-        console.log(error)
-      } finally {
-        this.listLoading = false
-      }
-    },
-    async handlePageChange() {
-      if (this.isRequesting) return; // 如果正在请求，则不重复请求
+const iconSearch = markRaw(Search)
+const iconEdit = markRaw(Edit)
+const iconPlus = markRaw(Plus)
+const adminStore = store.admin()
 
-      this.isRequesting = true; // 开始请求
-      await this.getList();
-      this.isRequesting = false; // 请求完成
-    },
-    handleFilter() {
-      this.listQuery.page = 1;
-      this.getList();
-    },
-    async handleModifyStatus(row, status) {
-      const adminLoginToken = store.admin().adminLoginToken
-      const updateResp = await UserApi.updateUser(adminLoginToken, {
-        id: row.id,
-        status,
-      })
-      if (updateResp.data.code === 10000) {
-        row.status = status;
-        const index = this.list.findIndex(v => v.id === row.id);
-        this.list.splice(index, 1, row);
-        ElNotification({
-          title: 'Success',
-          message: '更新成功',
-          type: 'success',
-          duration: 2000
-        });
-      }
-    },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.dialogStatus = 'update';
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate();
-      });
-    },
-    async updateData() {
-      const isValid = await this.$refs['dataForm'].validate()
-      if (isValid) {
-        const adminLoginToken = store.admin().adminLoginToken
-        const tempData = Object.assign({}, this.temp);
-        const updateResp = await UserApi.updateUser(adminLoginToken, tempData)
-        if (updateResp.data.code === 10000) {
-          const index = this.list.findIndex(v => v.id === this.temp.id);
-          this.list.splice(index, 1, this.temp);
-          this.dialogFormVisible = false;
-          ElNotification({
-            title: 'Success',
-            message: '更新成功',
-            type: 'success',
-            duration: 2000
-          });
-        }
-      }
-    },
-    async fetchInviteRelation(row) {
-      alert("暂无数据");
-      // const adminLoginToken = store.admin().adminLoginToken
-      // const updateResp = await UserApi.updateUser(adminLoginToken, {
-      //   id: row.id,
-      //   status,
-      // })
-      // if (updateResp.data.code === 10000) {
-      //   row.status = status;
-      //   const index = this.list.findIndex(v => v.id === row.id);
-      //   this.list.splice(index, 1, row);
-      //   ElNotification({
-      //     title: 'Success',
-      //     message: '更新成功',
-      //     type: 'success',
-      //     duration: 2000
-      //   });
-      // }
-    },
-    async fetchAccountInfo(row) {
-      alert("暂无数据");
-    }
+// 数据
+const tableKey = ref(0)
+const list = ref<any[]>([])
+const total = ref(0)
+const listLoading = ref(true)
+const isRequesting = ref(false)
+
+const listQuery = reactive({
+  page: 1,
+  page_size: 20,
+  user_name: '',
+  role: ''
+})
+
+const roleTypeOptions = ref<any[]>([])
+const roleTypeMap = ref<Record<string, string>>({})
+const temp = ref<any>({})
+const dialogStatus = ref('')
+const dialogFormVisible = ref(false)
+
+const preCreateAdmin = reactive<any>({})
+const createDialogStatus = ref('')
+const createDialogFormVisible = ref(false)
+
+// 获取角色列表
+const getAdminRoleList = async () => {
+  const adminLoginToken = adminStore.adminLoginToken
+  const listResp = await RoleApi.getRoleList(adminLoginToken)
+  if (listResp.data.code === 10000) {
+    const roles = listResp.data.data.roles
+    roleTypeOptions.value = roles
+    roleTypeMap.value = roles.reduce((acc: any, item: any) => {
+      acc[item.role] = item.name
+      return acc
+    }, {})
   }
-});
+}
+
+// 获取管理员列表
+const getList = async () => {
+  listLoading.value = true
+  const adminLoginToken = adminStore.adminLoginToken
+  try {
+    const listResp = await AdminApi.fetchAdminList(adminLoginToken, listQuery)
+    if (listResp.data.code === 10000) {
+      list.value = listResp.data.data.admins
+      total.value = listResp.data.data.total
+    } else {
+      ElMessage.error(listResp.data.msg)
+    }
+  } finally {
+    listLoading.value = false
+  }
+}
+
+// 翻页
+const handlePageChange = async () => {
+  if (isRequesting.value) return
+  isRequesting.value = true
+  await getList()
+  isRequesting.value = false
+}
+
+// 过滤
+const handleFilter = () => {
+  listQuery.page = 1
+  getList()
+}
+
+// 查看详情
+const handleShowDetail = (row: any) => {
+  temp.value = { ...row }
+  dialogStatus.value = 'detail'
+  dialogFormVisible.value = true
+}
+
+// 修改状态
+const handleModifyStatus = async (row: any, status: number) => {
+  const adminLoginToken = adminStore.adminLoginToken
+  const updateResp = await AdminApi.updateOtherAdminInfo(adminLoginToken, { admin_id: row.id, status })
+  if (updateResp.data.code === 10000) {
+    row.status = status
+    const index = list.value.findIndex((v) => v.id === row.id)
+    list.value.splice(index, 1, row)
+    ElNotification.success({ title: 'Success', message: '更新成功', duration: 2000 })
+  }
+}
+
+// 创建管理员
+const handleCreateAdmin = () => {
+  Object.assign(preCreateAdmin, {})
+  createDialogStatus.value = 'create'
+  createDialogFormVisible.value = true
+}
+
+const createAdmin = async () => {
+  if (preCreateAdmin.password !== preCreateAdmin.confirm_password) return ElMessage.error('两次输入的密码不一致！')
+  if (preCreateAdmin.password.length < 6) return ElMessage.error('密码至少6位！')
+  if (!preCreateAdmin.role) return ElMessage.error('请选择角色！')
+
+  const adminLoginToken = adminStore.adminLoginToken
+  const resp = await AdminApi.createAdmin(adminLoginToken, preCreateAdmin)
+  if (resp.data.code === 10000) {
+    ElNotification.success({ title: 'Success', message: '创建成功', duration: 2000 })
+    window.location.reload()
+  } else {
+    ElMessage.error(resp.data.msg)
+  }
+}
+
+// 初始化
+onMounted(() => {
+  getAdminRoleList()
+  getList()
+})
 </script>
