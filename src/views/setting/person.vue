@@ -20,7 +20,14 @@
 
           <div class="tw-flex !tw-items-center">
             <QrcodeVue :value="qrCodeUrl" :size="200" class="qrcode" />
-            <el-button class="tw-ml-4" type="primary" @click="regenSecret">重新生成</el-button>
+            <el-button 
+              class="tw-ml-4"
+              type="primary"
+              @click="regenSecret"
+              :disabled="!canModifyInfo"
+            >
+             重新生成
+            </el-button>
           </div>
           
         </el-card>
@@ -32,8 +39,19 @@
       </el-col>
       <el-col :lg="8">
         <el-form-item>
-          <el-button type="primary" @click="submit">保存信息</el-button>
-          <el-button @click="reset">重置</el-button>
+          <el-button 
+            type="primary" 
+            @click="submit"
+            :disabled="!canModifyInfo"
+          >
+            保存信息
+          </el-button>
+          <el-button 
+            @click="reset"
+            :disabled="!canModifyInfo"
+          >
+            重置
+          </el-button>
         </el-form-item>
       </el-col>
       <el-col :lg="8">
@@ -43,11 +61,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import * as AdminApi from '@/api/admin'
 import store from '@/store';
 import QrcodeVue from 'qrcode.vue'
+import { hasActionPermission } from '@/utils/tool'
 
 interface Admin {
   user_name: string;
@@ -112,6 +131,11 @@ const reset = () => loadInfo();
 onMounted(() => {
   loadInfo();
 });
+
+const canModifyInfo = computed(() => {
+  return hasActionPermission('/setting/person:modify', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
 </script>
 
 <style scoped>

@@ -8,8 +8,8 @@
     >
       <div 
         class="card-panel" 
-        @click="handleSetLineChartData('completed')"
-        :class="{ 'is-active': selectedType === 'completed' }"
+        @click="handleSetLineChartData('order_completed')"
+        :class="{ 'is-active': selectedType === 'order_completed' }"
       >
         <div class="card-panel-icon-wrapper icon-people">
           <svg-icon icon-class="money" class-name="card-panel-icon" />
@@ -20,14 +20,14 @@
           </div>
           <div>
             <span class="tw-text-[16px] tw-font-normal">总数: </span>
-            <count-to :start-val="0" :end-val="summary.completed.count" :duration="2000" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="statData.order_summary.completed.count" :duration="2000" class="card-panel-num" />
             <span class="tw-text-[14px]"> 笔</span>
           </div>
           <div>
             <span class="tw-text-[16px] tw-font-normal">总额: </span>
             <count-to 
               :start-val="0" 
-              :end-val="summary.completed.amount" 
+              :end-val="statData.order_summary.completed.amount" 
               :duration="2000"
               :decimals="2"
               :formatter="val => Number(val).toFixed(2)"
@@ -46,46 +46,8 @@
     >
       <div 
         class="card-panel" 
-        @click="handleSetLineChartData('ongoing')"
-        :class="{ 'is-active': selectedType === 'ongoing' }"
-      >
-        <div class="card-panel-icon-wrapper icon-message">
-          <svg-icon icon-class="money" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">
-            订单交易中
-          </div>
-          <div>
-            <span class="tw-text-[16px] tw-font-normal">总数: </span>
-            <count-to :start-val="0" :end-val="summary.ongoing.count" :duration="2000" class="card-panel-num" />
-            <span class="tw-text-[14px]"> 笔</span>
-          </div>
-          <div>
-            <span class="tw-text-[16px] tw-font-normal">总额: </span>
-            <count-to 
-              :start-val="0" 
-              :end-val="summary.ongoing.amount" 
-              :duration="2000"
-              :decimals="2"
-              :formatter="val => Number(val).toFixed(2)"
-              class="card-panel-num" 
-            />
-            <span class="tw-text-[14px]"> USDT</span>
-          </div>
-        </div>
-      </div>
-    </el-col>
-    <el-col 
-      :xs="12" 
-      :sm="12" 
-      :lg="8" 
-      class="card-panel-col"
-    >
-      <div 
-        class="card-panel" 
-        @click="handleSetLineChartData('hanged')"
-        :class="{ 'is-active': selectedType === 'hanged' }"
+        @click="handleSetLineChartData('order_hanged')"
+        :class="{ 'is-active': selectedType === 'order_hanged' }"
       >
         <div class="card-panel-icon-wrapper icon-money">
           <svg-icon icon-class="money" class-name="card-panel-icon" />
@@ -96,14 +58,52 @@
           </div>
           <div>
             <span class="tw-text-[16px] tw-font-normal">总数: </span>
-            <count-to :start-val="0" :end-val="summary.hanged.count" :duration="2000" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="statData.order_summary.hanged.count" :duration="2000" class="card-panel-num" />
             <span class="tw-text-[14px]"> 笔</span>
           </div>
           <div>
             <span class="tw-text-[16px] tw-font-normal">总额: </span>
             <count-to 
               :start-val="0" 
-              :end-val="summary.hanged.amount" 
+              :end-val="statData.order_summary.hanged.amount" 
+              :duration="2000"
+              :decimals="2"
+              :formatter="val => Number(val).toFixed(2)"
+              class="card-panel-num" 
+            />
+            <span class="tw-text-[14px]"> USDT</span>
+          </div>
+        </div>
+      </div>
+    </el-col>
+    <el-col 
+      :xs="12" 
+      :sm="12" 
+      :lg="8" 
+      class="card-panel-col"
+    >
+      <div 
+        class="card-panel" 
+        @click="handleSetLineChartData('recharge_completed')"
+        :class="{ 'is-active': selectedType === 'recharge_completed' }"
+      >
+        <div class="card-panel-icon-wrapper icon-message">
+          <svg-icon icon-class="money" class-name="card-panel-icon" />
+        </div>
+        <div class="card-panel-description">
+          <div class="card-panel-text">
+            充值已完成
+          </div>
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总数: </span>
+            <count-to :start-val="0" :end-val="statData.recharge_summary.completed.count" :duration="2000" class="card-panel-num" />
+            <span class="tw-text-[14px]"> 笔</span>
+          </div>
+          <div>
+            <span class="tw-text-[16px] tw-font-normal">总额: </span>
+            <count-to 
+              :start-val="0" 
+              :end-val="statData.recharge_summary.completed.amount" 
               :duration="2000"
               :decimals="2"
               :formatter="val => Number(val).toFixed(2)"
@@ -126,18 +126,22 @@ export default defineComponent({
     CountTo
   },
   props: {
-    summary: {
+    statData: {
       type: Object,
       default: () => ({
-        completed: { count: 0, amount: 0, chart: [] },
-        ongoing: { count: 0, amount: 0, chart: [] },
-        hanged: { count: 0, amount: 0, chart: [] },
+        order_summary: {
+          completed: { count: 0, amount: 0, chart: [] },
+          hanged: { count: 0, amount: 0, chart: [] },
+        },
+        recharge_summary: {
+          completed: { count: 0, amount: 0, chart: [] },
+        },
       })
     }
   },
   data() {
     return {
-      selectedType: 'completed',
+      selectedType: 'order_completed',
     }
   },
   methods: {
@@ -168,9 +172,14 @@ export default defineComponent({
     background: #fff;
     box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
     border-color: rgba(0, 0, 0, .05);
+    border-radius: 1rem;
 
     &:hover,
     &.is-active {
+
+      background-color: rgba(250, 240, 200, 0.7);
+      border: solid 2px black;
+
       .card-panel-icon-wrapper {
         color: #fff;
       }

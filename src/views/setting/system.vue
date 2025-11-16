@@ -1,16 +1,25 @@
 <template>
   
-  <el-form :model="form" ref="formRef" label-width="160px" label-position="left">
+  <el-form :model="form" ref="formRef" label-width="180px" label-position="left">
     <el-row>
       <el-col :lg="8">
         <!-- 基本信息 -->
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[320px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[400px]">
           <el-form-item label="广告文字">
-            <el-input type="textarea" v-model="form.advertisement_text" :rows="2" />
+            <el-input 
+              type="textarea" 
+              v-model="form.advertisement_text" 
+              :rows="2"
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
 
           <el-form-item label="平台收款地址">
-            <el-input v-model="form.payment_address" placeholder="请输入收款地址地址" />
+            <el-input 
+              v-model="form.payment_address"
+              placeholder="请输入收款地址地址"
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
 
           <!-- <el-form-item label="支付二维码">
@@ -18,41 +27,92 @@
           </el-form-item> -->
 
           <el-form-item label="转账手续费 (USDT)">
-            <el-input-number v-model="form.transfer_fee" :min="0" :step="0.01" />
+            <el-input-number
+              v-model="form.transfer_fee" 
+              :min="0" 
+              :step="0.01"
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
 
           <el-form-item label="提现手续费 (USDT)">
-            <el-input-number v-model="form.withdrawl_fee" :min="0" :step="0.01" />
+            <el-input-number 
+              v-model="form.withdrawl_fee" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
         </el-card>
       </el-col>
 
       <el-col :lg="8">
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[320px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[400px]">
           
           <el-form-item label="平台汇率">
-            <el-input-number v-model="form.exchange_rate_platform" :min="0" :step="0.01" />
+            <el-input-number 
+              v-model="form.exchange_rate_platform" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
 
           <el-form-item label="支付宝汇率">
-            <el-input-number v-model="form.exchange_rate_alipay" :min="0" :step="0.01" />
+            <el-input-number 
+              v-model="form.exchange_rate_alipay" 
+              :min="0" 
+              :step="0.01"
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
 
           <el-form-item label="微信汇率">
-            <el-input-number v-model="form.exchange_rate_wechat" :min="0" :step="0.01" />
+            <el-input-number 
+              v-model="form.exchange_rate_wechat" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
 
           <el-form-item label="银行卡汇率">
-            <el-input-number v-model="form.exchange_rate_bank" :min="0" :step="0.01" />
+            <el-input-number 
+              v-model="form.exchange_rate_bank" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
+          </el-form-item>
+
+          <el-form-item label="代理佣金比例（%）">
+            <el-input-number 
+              v-model="form.agent_commission_rate" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
+          </el-form-item>
+
+          <el-form-item label="系统买家佣金比例（%）">
+            <el-input-number 
+              v-model="form.buyer_commission_rate" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
           </el-form-item>
         </el-card>
       </el-col>
 
       <el-col :lg="8">
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[320px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[400px]">
           <!-- 优化后的远程订单配置 -->
           <el-form-item label="远程下单开放市场">
-            <el-checkbox-group v-model="remoteConfig.openMarkets">
+            <el-checkbox-group 
+              v-model="remoteConfig.openMarkets"
+              :disabled="!canModifyConfig"
+            >
               <el-checkbox label="alipay">支付宝</el-checkbox>
               <el-checkbox label="wechat">微信</el-checkbox>
               <el-checkbox label="bank">银行卡</el-checkbox>
@@ -73,12 +133,14 @@
                   min="1"
                   @input="handleAmountChange(index)"
                   class="tw-w-[150px]"
+                  :disabled="!canModifyConfig"
                 />
                 <el-button
                   v-if="remoteConfig.amountOptions.length > 1"
                   type="danger"
                   link
                   @click="removeAmount(index)"
+                  :disabled="!canModifyConfig"
                 >
                   删除
                 </el-button>
@@ -90,6 +152,7 @@
                 type="primary"
                 link
                 @click="addAmount"
+                :disabled="!canModifyConfig"
               >
                 + 添加额度
               </el-button>
@@ -104,8 +167,19 @@
       </el-col>
       <el-col :lg="8">
         <el-form-item>
-          <el-button type="primary" @click="submit">保存配置</el-button>
-          <el-button @click="reset">重置</el-button>
+          <el-button 
+            type="primary" 
+            @click="submit"
+            :disabled="!canModifyConfig"
+          >
+            保存配置
+          </el-button>
+          <el-button 
+            @click="reset"
+            :disabled="!canModifyConfig"
+          >
+            重置
+          </el-button>
         </el-form-item>
       </el-col>
       <el-col :lg="8">
@@ -115,16 +189,19 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import * as ConfigApi from '@/api/config'
 import store from '@/store';
+import { hasActionPermission } from '@/utils/tool'
 
 interface PlatformConfig {
   payment_address: string;
   payment_qr_code: string;
   transfer_fee: number;
   withdrawl_fee: number;
+  agent_commission_rate: number;
+  buyer_commission_rate: number;
   exchange_rate_platform: number;
   exchange_rate_alipay: number;
   exchange_rate_wechat: number;
@@ -145,6 +222,8 @@ const form = reactive<PlatformConfig>({
   payment_qr_code: '',
   transfer_fee: 0,
   withdrawl_fee: 0,
+  agent_commission_rate: 0,
+  buyer_commission_rate: 0,
   exchange_rate_platform: 0,
   exchange_rate_alipay: 0,
   exchange_rate_wechat: 0,
@@ -221,6 +300,10 @@ const reset = () => loadConfig();
 onMounted(() => {
   loadConfig();
 });
+
+const canModifyConfig = computed(() => {
+  return hasActionPermission('/setting/system:modify', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
 </script>
 
 <style scoped>

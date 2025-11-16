@@ -40,13 +40,13 @@
           <span>{{ row.invite_code ? row.invite_code : '-' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="上下级" width="90px" align="center">
+      <el-table-column label="上下级" width="90px" align="center" v-if="canScanInviterRelation">
         <template v-slot="{row}">
           <span v-if="row.role == 'agent'" class="link-type" @click="fetchInviteRelation(row)">{{ `查看下级` }}</span>
           <span>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="资产" width="90px" align="center">
+      <el-table-column label="资产" width="90px" align="center" v-if="canScanAccount">
         <template v-slot="{row}">
           <span 
             v-if="row.role === 'agent' || row.role === 'seller'" 
@@ -56,7 +56,7 @@
           <span>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="密码" width="90px" align="center">
+      <el-table-column label="密码" width="90px" align="center" v-if="canModifyPassword">
         <template v-slot="{row}">
           <span 
             class="link-type" 
@@ -80,10 +80,10 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template v-slot="{row, $index}">
           <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
-            <el-button :disabled="row.status == 1" size="small" type="success" @click="handleModifyStatus(row, 1)">
+            <el-button :disabled="row.status == 1 || !canBanUser" size="small" type="success" @click="handleModifyStatus(row, 1)">
               启用
             </el-button>
-            <el-button :disabled="row.status == 0" size="small" type="danger" @click="handleModifyStatus(row, 0)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+            <el-button :disabled="row.status == 0 || !canBanUser" size="small" type="danger" @click="handleModifyStatus(row, 0)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
               封禁
             </el-button>
           </div>
@@ -210,13 +210,21 @@
           <template #label>
             <span class="tw-font-bold tw-w-[70px]">变动值:</span>
           </template>
-          <el-input v-model="delta_amount" placeholder="变动数值，负数代表减少资产" />
+          <el-input 
+            v-model="delta_amount" 
+            placeholder="变动数值，负数代表减少资产" 
+            :disabled="!canModifyAccount"
+          />
         </el-form-item>
         <el-form-item class="tw-ml-16">
           <el-button @click="accountVisible = false">
             取消
           </el-button>
-          <el-button type="primary" @click="updateAccount()">
+          <el-button 
+            type="primary" 
+            @click="updateAccount()"
+            :disabled="!canModifyAccount"
+          >
             确认修改
           </el-button>
         </el-form-item>
@@ -275,15 +283,49 @@
           <template #label>
             <span class="tw-font-bold tw-w-[70px]">角色:</span>
           </template>
-          <el-select v-model="currentUser.role" class="filter-item" placeholder="请选择角色">
-            <el-option v-for="item in canSelectRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+          <el-select 
+            v-model="currentUser.role" 
+            class="filter-item" 
+            placeholder="请选择角色"
+            v-if="canGrantSpecialRole && canGrantNormalRole"
+          >
+            <el-option v-for="item in canSelectAllRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+          </el-select>
+          <el-select 
+            v-model="currentUser.role" 
+            class="filter-item" 
+            placeholder="请选择角色"
+            v-else-if="canGrantSpecialRole"
+          >
+            <el-option v-for="item in canSelectSpecialRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+          </el-select>
+          <el-select 
+            v-model="currentUser.role" 
+            class="filter-item" 
+            placeholder="请选择角色"
+            v-else-if="canGrantNormalRole"
+          >
+            <el-option v-for="item in canSelectNormalRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+          </el-select>
+          <el-select 
+            v-model="currentUser.role" 
+            class="filter-item" 
+            placeholder="请选择角色"
+            v-else
+            disabled
+          >
+            <el-option v-for="item in canSelectAllRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </el-form-item>
         <el-form-item>
           <el-button @click="changeRoleVisible = false">
             取消
           </el-button>
-          <el-button type="primary" @click="updateRole()">
+          <el-button 
+            type="primary" 
+            @click="updateRole()"
+            :disabled="!canGrantSpecialRole && !canGrantNormalRole"
+          >
             确认修改
           </el-button>
         </el-form-item>
@@ -301,7 +343,7 @@ import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
 import { ElMessage } from 'element-plus';
-import { formatIdDisplay, getAdjustWidth } from '@/utils/tool'
+import { formatIdDisplay, getAdjustWidth, hasActionPermission } from '@/utils/tool'
 
 const roleTypeOptions = [
   { key: 'platform', display_name: '平台总代理' },
@@ -310,7 +352,15 @@ const roleTypeOptions = [
   { key: 'buyer', display_name: '买家' },
   { key: 'autoBuyer', display_name: '自动化买家' },
 ];
-const canSelectRoleTypeOptions = [
+const canSelectNormalRoleTypeOptions = [
+  { key: 'seller', display_name: '商户' },
+  { key: 'buyer', display_name: '买家' },
+];
+const canSelectSpecialRoleTypeOptions = [
+  { key: 'agent', display_name: '代理' },
+  { key: 'autoBuyer', display_name: '自动化买家' },
+];
+const canSelectAllRoleTypeOptions = [
   { key: 'agent', display_name: '代理' },
   { key: 'seller', display_name: '商户' },
   { key: 'buyer', display_name: '买家' },
@@ -360,7 +410,9 @@ export default defineComponent({
       isRequesting: false,
       roleTypeOptions,
       roleTypeMap,
-      canSelectRoleTypeOptions,
+      canSelectNormalRoleTypeOptions,
+      canSelectSpecialRoleTypeOptions,
+      canSelectAllRoleTypeOptions,
       statusOptions,
       statusMap,
       statusFilterMap,
@@ -385,10 +437,41 @@ export default defineComponent({
   created() {
     this.getList();
   },
+  computed: {
+    canGrantNormalRole() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:grantNormalRole', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+    canGrantSpecialRole() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:grantSpecialRole', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+    canScanInviterRelation() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:scanInviterRelation', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+    canScanAccount() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:scanAccount', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+    canModifyAccount() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:modifyAccount', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+    canModifyPassword() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:modifyPassword', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+    canBanUser() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:ban', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
+  },
   methods: {
     parseTime,
     formatIdDisplay,
     getAdjustWidth,
+    hasActionPermission,
     async getList() {
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken

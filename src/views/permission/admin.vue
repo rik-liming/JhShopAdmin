@@ -27,7 +27,13 @@
       <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
         搜索
       </el-button>
-      <el-button class="filter-item" type="success" :icon="iconPlus" @click="handleCreateAdmin">
+      <el-button 
+        class="filter-item" 
+        type="success" 
+        :icon="iconPlus" 
+        @click="handleCreateAdmin"
+        :disabled="!canAddAdmin"
+      >
         添加管理员
       </el-button>
     </div>
@@ -72,7 +78,11 @@
         <template #default="{ row }">
           <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
             <el-button
-              :disabled="row.status == 1 || row.user_name === adminStore.admin?.value?.userName"
+              :disabled="
+                row.status == 1 
+                || row.user_name === adminStore.admin?.value?.userName
+                || !canBanAdmin
+              "
               size="small"
               type="success"
               @click="handleModifyStatus(row, 1)"
@@ -80,7 +90,11 @@
               启用
             </el-button>
             <el-button
-              :disabled="row.status == 0 || row.user_name === adminStore.admin?.value?.userName"
+              :disabled="
+                row.status == 0 
+                || row.user_name === adminStore.admin?.value?.userName
+                || !canBanAdmin
+              "
               size="small"
               type="danger"
               class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0"
@@ -156,7 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, markRaw } from 'vue'
+import { ref, reactive, onMounted, markRaw, computed } from 'vue'
 import { Search, Edit, Plus } from '@element-plus/icons-vue'
 import * as RoleApi from '@/api/role'
 import * as AdminApi from '@/api/admin'
@@ -164,7 +178,7 @@ import store from '@/store'
 import { ElMessage, ElNotification } from 'element-plus'
 import Pagination from '@/components/Pagination'
 import { parseTime } from '@/utils'
-import { formatIdDisplay } from '@/utils/tool'
+import { formatIdDisplay, hasActionPermission } from '@/utils/tool'
 
 // 状态映射
 const statusMap = { '0': '已封禁', '1': '正常' }
@@ -291,4 +305,13 @@ onMounted(() => {
   getAdminRoleList()
   getList()
 })
+
+const canAddAdmin = computed(() => {
+  return hasActionPermission('/permission/admin:add', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
+const canBanAdmin = computed(() => {
+  return hasActionPermission('/permission/admin:ban', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
 </script>

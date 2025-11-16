@@ -101,10 +101,25 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template v-slot="{row, $index}">
           <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
-            <el-button :disabled="row.status !== 4" size="small" type="success" @click="handleOrderJudge(row, 5)">
+            <el-button 
+              :disabled="row.status !== 4
+                || !canApprove
+              " 
+              size="small" 
+              type="success" 
+              @click="handleOrderJudge(row, 5)"
+            >
               争议通过
             </el-button>
-            <el-button :disabled="row.status !== 4" size="small" type="danger" @click="handleOrderJudge(row, 6)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+            <el-button 
+              :disabled="row.status !== 4
+                || !canApprove
+              " 
+              size="small" 
+              type="danger" 
+              @click="handleOrderJudge(row, 6)" 
+              class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0"
+            >
               争议撤单
             </el-button>
           </div>
@@ -210,7 +225,7 @@ import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
 import { ElMessage } from 'element-plus';
-import { formatIdDisplay, formatPaymentMethod, getAdjustWidth } from '@/utils/tool'
+import { formatIdDisplay, formatPaymentMethod, getAdjustWidth, hasActionPermission } from '@/utils/tool'
 
 const paymentMethodOptions = [
   { key: 'alipay', display_name: '支付宝' },
@@ -287,6 +302,12 @@ export default defineComponent({
   },
   created() {
     this.getList();
+  },
+  computed: {
+    canApprove() {
+      const adminStore = store.admin()
+      return hasActionPermission('/order/auto:approve', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
   },
   methods: {
     parseTime,

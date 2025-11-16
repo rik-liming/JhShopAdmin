@@ -15,17 +15,24 @@ interface IPermissionState {
  * @param route
  */
 function hasMenuPermission(route: RouteRecordRaw, routerKeys: string[]):boolean {
-  return routerKeys.includes(route.routerKey)
+  // 有任意一条路由，前缀一致就证明有权限
+  // 构建所有可访问的路径集合
+  const allPaths = new Set();
+
+  routerKeys.forEach(key => {
+    const base = key.split(':')[0]; // 去掉权限后缀
+    const parts = base.split('/').filter(Boolean); // 拆成数组
+    let path = '';
+    parts.forEach(p => {
+      path += '/' + p;
+      allPaths.add(path);
+    });
+    if (base === '') allPaths.add('/'); // 根路径
+  });
+
+  return allPaths.has(route.routerKey);
 }
 
-/**
- * 判断是否有操作权限
- * @param actionKey
- * @param routerKeys 
- */
-function hasActionPermission(actionKey: string, routerKeys: string[]):boolean {
-  return routerKeys.includes(actionKey)
-}
 
 /**
  * Filter asynchronous routing tables by recursion
@@ -93,6 +100,15 @@ export default defineStore({
       if (!storage.value || storage.value == 0) {
         const latestRouterKeys = await this.fetchRouterKeys(adminLoginToken, adminId)
         return latestRouterKeys
+      }
+      return storage.value
+    },
+    // 同步获取最新的router keys，没获取到就默认不具有操作权限
+    getLatestRouterKeys(adminId: string) {
+      const storageKey = `routerKeys_admin_${adminId}`;
+      const storage = useStorage<string[]>(storageKey, []);
+      if (!storage.value || storage.value == 0) {
+        return []
       }
       return storage.value
     },

@@ -35,34 +35,93 @@
       highlight-current-row
       style="width: 100%; height: 580px; overflow: auto;"
     >
-      <el-table-column label="日期" width="300px" align="center">
+      <el-table-column label="日期" width="180px" align="center">
         <template v-slot="{row}">
           <span>{{ parseTime(row.report_date, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="买家ID" align="center" width="300px" >
+      <el-table-column label="买家ID" align="center" width="150px" >
         <template v-slot="{row}">
-          <span>{{ formatIdDisplay(row?.user_id) }}</span>
+          <span class="link-type" @click="handleShowDetail(row)">{{ formatIdDisplay(row?.user_id) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" width="300px" align="center">
+      <el-table-column label="买家邮箱" width="200px" align="center">
+        <template v-slot="{row}">
+          <span class="link-type" @click="handleShowDetail(row)">{{ row.user_email }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="订单状态" width="150px" align="center">
         <template v-slot="{row}">
           <el-tag type="success">
             {{ `成功` }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="日成交笔数" width="300px" align="center">
+      <el-table-column label="日成交笔数" width="200px" align="center">
         <template v-slot="{row}">
           <span>{{ row.order_count }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="日成交总额" width="290px" align="center">
+      <el-table-column label="日成交总额（USDT）" width="200px" align="center">
         <template v-slot="{row}">
           <span>{{ row.total_amount }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="佣金比例（%）" width="200px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.commission_rate }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="佣金（USDT）" width="200px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.commission_amount }}</span>
+        </template>
+      </el-table-column>
     </el-table>
+
+    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible" width="400" align-center>
+      <el-form :model="temp" label-position="left" label-width="150px" style="width: 300px; margin-left:50px;">
+        <el-form-item label="日期">
+          <template v-slot="{row}">
+            <span>{{ parseTime(temp.report_date, '{y}-{m}-{d}') }}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="买家ID">
+          <span>{{ formatIdDisplay(temp.user_id) }}</span>
+        </el-form-item>
+        <el-form-item label="买家邮箱">
+          <span>{{ temp.user_email }}</span>
+        </el-form-item>
+        <el-form-item label="订单状态">
+          <template v-slot="{row}">
+            <el-tag type="success">
+              {{ '成功' }}
+            </el-tag>
+          </template>
+        </el-form-item>
+        <el-form-item label="日成交笔数">
+          <span>{{ temp.order_count }}</span>
+        </el-form-item>
+        <el-form-item label="日成交总额（USDT）">
+          <span>{{ temp.total_amount }}</span>
+        </el-form-item>
+        <el-form-item label="佣金比例（%）">
+          <span>{{ temp.commission_rate }}</span>
+        </el-form-item>
+        <el-form-item label="佣金（USDT）">
+          <span>{{ temp.commission_amount }}</span>
+        </el-form-item>
+        
+        
+      </el-form>
+      <template #footer>
+        <div class="tw-flex tw-justify-start tw-ml-40">
+          <el-button type="primary" @click="dialogFormVisible = false">
+            确认
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -103,8 +162,8 @@ export default defineComponent({
       list: null,
       listLoading: true,
       listQuery: {
-        startTime: (new Date().toISOString().split('T')[0]),
-        endTime: (new Date().toISOString().split('T')[0]),
+        startTime: dayjs().format('YYYY-MM-DD'),
+        endTime: dayjs().format('YYYY-MM-DD'),
         type: 'buyer',
       },
       minTableRowCount: 15,
@@ -112,6 +171,12 @@ export default defineComponent({
       paymentMethodOptions,
       statusMap,
       statusFilterMap,
+      dialogStatus: '',
+      textMap: {
+        detail: '详情',
+      },
+      dialogFormVisible: false,
+      temp: {},
     };
   },
   created() {
@@ -163,7 +228,12 @@ export default defineComponent({
       this.listQuery.endTime = todayStr;
 
       this.getList();
-    }
+    },
+    handleShowDetail(row) {
+      this.temp = Object.assign({}, row); // copy obj
+      this.dialogStatus = 'detail';
+      this.dialogFormVisible = true;
+    },
   }
 });
 </script>

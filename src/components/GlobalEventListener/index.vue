@@ -87,6 +87,15 @@ const onAdminRoleStatusChanged = async(data) => {
 	}
 }
 
+const onAdminPrivilegeChanged = async(data) => {
+	// 如果是自己所属角色
+	if (data.role === adminStore?.admin?.value?.role) {
+		forceLogoutTitle.value = "权限变更"
+		forceLogoutMsg.value = "您的角色权限已变更，请重新登录"
+		forceLogoutVisible.value = true;
+	}
+}
+
 onMounted(() => {
 
   // 检查是否存在强制退出弹框
@@ -104,6 +113,9 @@ onMounted(() => {
   // 监听角色状态变更事件
   emitter.on('admin:roleStatusChanged', onAdminRoleStatusChanged);
 
+  // 监听角色权限变更事件
+  emitter.on('admin:privilegeChanged', onAdminPrivilegeChanged);
+
   // 可以在这里继续监听其他全局事件
   // emitter.on('user:assetChanged', ...)
 });
@@ -114,6 +126,7 @@ onUnmounted(() => {
   emitter.off('message:read', onMessageRead);
   emitter.off('admin:statusChanged', onAdminStatusChanged);
   emitter.off('admin:roleStatusChanged', onAdminStatusChanged);
+  emitter.off('admin:privilegeChanged', onAdminPrivilegeChanged);
 });
 
 // 监听弹窗状态，动态注册/移除刷新拦截事件

@@ -73,10 +73,25 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template v-slot="{row, $index}">
           <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
-            <el-button :disabled="row.status !== 0" size="small" type="success" @click="handleModifyStatus(row, 1)">
+            <el-button 
+              :disabled="row.status !== 0
+                || !canApprove 
+              " 
+              size="small" 
+              type="success" 
+              @click="handleModifyStatus(row, 1)"
+            >
               通过
             </el-button>
-            <el-button :disabled="row.status !== 0" size="small" type="danger" @click="handleModifyStatus(row, -1)" class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0">
+            <el-button 
+              :disabled="row.status !== 0
+                || !canApprove
+              "
+              size="small"
+              type="danger"
+              @click="handleModifyStatus(row, -1)"
+              class="!tw-ml-0 !tw-mt-2 md:!tw-ml-4 md:!tw-mt-0"
+            >
               驳回
             </el-button>
           </div>
@@ -163,7 +178,7 @@ import waves from '@/directive/waves'; // waves directive
 import { parseTime } from '@/utils';
 import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
 import { ElMessage } from 'element-plus';
-import { formatIdDisplay, formatImageUrl } from '@/utils/tool'
+import { formatIdDisplay, formatImageUrl, hasActionPermission } from '@/utils/tool'
 
 const statusMap = {
   '0': '待审核',
@@ -209,6 +224,12 @@ export default defineComponent({
   },
   created() {
     this.getList();
+  },
+  computed: {
+    canApprove() {
+      const adminStore = store.admin()
+      return hasActionPermission('/transaction/recharge:approve', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
   },
   methods: {
     parseTime,

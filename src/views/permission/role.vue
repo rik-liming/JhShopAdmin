@@ -19,7 +19,13 @@
       <el-button class="filter-item" type="primary" :icon="iconSearch" @click="handleFilter">
         搜索
       </el-button>
-      <el-button class="filter-item" type="success" :icon="iconPlus" @click="handleCreateRole">
+      <el-button 
+        class="filter-item" 
+        type="success" 
+        :icon="iconPlus" 
+        @click="handleCreateRole"
+        :disabled="!canAddRole"
+      >
         添加角色
       </el-button>
     </div>
@@ -52,9 +58,10 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="权限" width="100" align="center">
+      <el-table-column label="权限" width="100" align="center" v-if="canModifyPrivilege">
         <template #default="{ row }">
-          <span class="link-type" @click="handleShowTree(row)">{{ `权限管理` }}</span>
+          <span v-if="row.role === 'superAdmin' || row.role === adminStore?.admin?.value?.role">-</span>
+          <span v-else class="link-type" @click="handleShowTree(row)">{{ `权限管理` }}</span>
         </template>
       </el-table-column>
 
@@ -80,6 +87,7 @@
                 row.status == 1 
                 || row.role === adminStore.admin?.value?.role
                 || row.role === 'superAdmin'
+                || !canBanRole
               "
               size="small"
               type="success"
@@ -92,6 +100,7 @@
                 row.status == 0
                 || row.role === adminStore.admin?.value?.role
                 || row.role === 'superAdmin'
+                || !canBanRole
               "
               size="small"
               type="danger"
@@ -190,7 +199,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, markRaw } from 'vue'
+import { ref, reactive, onMounted, markRaw, computed } from 'vue'
 import { Search, Edit, Plus } from '@element-plus/icons-vue'
 import * as RoleApi from '@/api/role'
 import * as PrivilegeApi from '@/api/privilege'
@@ -198,7 +207,7 @@ import store from '@/store'
 import { ElMessage, ElNotification } from 'element-plus'
 import Pagination from '@/components/Pagination'
 import { parseTime } from '@/utils'
-import { formatIdDisplay, getAdjustWidth } from '@/utils/tool'
+import { formatIdDisplay, getAdjustWidth, hasActionPermission } from '@/utils/tool'
 import Tree from './components/Tree.vue'
 
 // 状态映射
@@ -386,4 +395,17 @@ onMounted(() => {
   getPrivilegesTree()
   getList()
 })
+
+const canAddRole = computed(() => {
+  return hasActionPermission('/permission/role:add', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
+const canModifyPrivilege = computed(() => {
+  return hasActionPermission('/permission/role:privilegeManage', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
+const canBanRole = computed(() => {
+  return hasActionPermission('/permission/role:ban', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
 </script>

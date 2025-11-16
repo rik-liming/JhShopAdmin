@@ -11,4 +11,8 @@ export function initAdminListener() {
   channel.bind('AdminRoleStatusChanged', async (data: any) => {
 	  emitter.emit('admin:roleStatusChanged', data);
   });
+
+  channel.bind('AdminPrivilegeChanged', async (data: any) => {
+	  emitter.emit('admin:privilegeChanged', data);
+  });
 }

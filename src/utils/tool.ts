@@ -1,3 +1,5 @@
+import store from '@/store'
+
 export function formatIdDisplay(id) {
     if (!id) {
         return ''
@@ -64,4 +66,21 @@ export function getAdjustWidth(baseWidth, minWidth, maxWidth) {
     return maxWidth
   }
   return calWidth
+}
+
+/**
+ * 判断是否有操作权限
+ * @param actionKey
+ * @param routerKeys 
+ */
+export function hasActionPermission(actionKey: string, adminId: string, role: string): boolean {
+  if (role === 'superAdmin') {
+    return true
+  }
+
+  const permissionStore = store.permission?.()
+  if (!permissionStore || typeof permissionStore.getLatestRouterKeys !== 'function') return false
+
+  const routerKeys: string[] = permissionStore.getLatestRouterKeys(adminId) || []
+  return routerKeys.includes(actionKey)
 }

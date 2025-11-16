@@ -25,61 +25,26 @@
 import { ref, onMounted, nextTick, defineProps, watch, defineExpose } from 'vue'
 
 const props = defineProps<{
-  privilegeTree: any[]
-  treeKey: number
-  checkedRules: number[]
+  privilegeTree: any[],
+  treeKey: number,
+  checkedRules: number[],
 }>()
 
-const treeRef = ref<any>(null)
+const treeRef = ref(null)
 
-// ✅ 手动勾选节点 + 自动勾选其所有父节点
+// 手动勾选指定节点
 function manuallyCheckNodes(tree, ids: number[]) {
-  if (!tree || !Array.isArray(ids)) return
+  if (!tree || !Array.isArray(ids) || ids.length === 0) return
   ids.forEach(id => {
-    const node = tree.getNode(id)
-    if (node) {
-      tree.setChecked(node.data.id, true, false)
-      // 向上递归选中所有父节点
-      let parent = node.parent
-      while (parent && parent.level > 0) {
-        tree.setChecked(parent.data.id, true, false)
-        parent = parent.parent
-      }
+    try {
+      tree.setChecked(id, true, true)
+    } catch (e) {
+      console.warn('manuallyCheckNodes setChecked failed for id', id, e)
     }
   })
 }
 
-// ✅ 只要任意子节点被选中，父节点自动选中
-function onNodeCheck(data, { checkedKeys }) {
-  const tree = treeRef.value
-  const node = tree.getNode(data.id)
-
-  // 如果当前节点被选中，则递归选中所有父节点
-  if (node.checked) {
-    let parent = node.parent
-    while (parent && parent.level > 0) {
-      tree.setChecked(parent.data.id, true, false)
-      parent = parent.parent
-    }
-  }
-
-  // 如果取消勾选，需要递归取消子节点（不动父节点）
-  else {
-    const uncheckChildren = (n) => {
-      if (n.childNodes?.length) {
-        n.childNodes.forEach(c => {
-          tree.setChecked(c.data.id, false, false)
-          uncheckChildren(c)
-        })
-      }
-    }
-    uncheckChildren(node)
-  }
-
-  requestAnimationFrame(() => markLeafChildrenRows())
-}
-
-// ✅ 横排样式逻辑
+// 标记叶子节点的父容器横排
 function markLeafChildrenRows() {
   const treeEl = treeRef.value?.$el
   if (!treeEl) return
@@ -94,6 +59,7 @@ function markLeafChildrenRows() {
     const childNodes = Array.from(childrenContainer.querySelectorAll(':scope > .el-tree-node'))
     if (childNodes.length === 0) return
 
+    // 只有最终叶子节点的父节点横排：所有子节点都没有子节点
     const allChildrenAreLeaf = childNodes.every(c => {
       const grandChildren = c.querySelector(':scope > .el-tree-node__children')
       if (!grandChildren) return true
@@ -112,8 +78,59 @@ const handleNodeChange = async () => {
   markLeafChildrenRows()
 }
 
-const getSelectedRules = () => treeRef.value?.getCheckedKeys() || []
-defineExpose({ getSelectedRules })
+// 节点勾选逻辑
+const onNodeCheck = (data, { checkedKeys }) => {
+  const tree = treeRef.value
+  const node = tree.getNode(data.id)
+
+  if (node.checked) {
+    let parent = node.parent
+    while (parent && parent.level > 0) {
+      tree.setChecked(parent.data.id, true, false)
+      parent = parent.parent
+    }
+  } else {
+    const uncheckChildren = (n) => {
+      if (n.childNodes?.length) {
+        n.childNodes.forEach(c => {
+          tree.setChecked(c.data.id, false, false)
+          uncheckChildren(c)
+        })
+      }
+    }
+    uncheckChildren(node)
+  }
+
+  requestAnimationFrame(() => markLeafChildrenRows())
+}
+
+function collectCheckedFromData(treeData) {
+  const ret = []
+  const dfs = (arr) => {
+    if (!Array.isArray(arr)) return
+    arr.forEach(n => {
+      if (!n) return
+      if (n.checked) ret.push(n.id)
+      if (n.children && n.children.length) dfs(n.children)
+    })
+  }
+  dfs(treeData)
+  return ret
+}
+
+// 暴露给父组件的方法
+const getSelectedRules = () => {
+  // 优先使用数据源来收集（包含父节点）
+  const fromData = collectCheckedFromData(props.privilegeTree)
+  // 也可以拿 el-tree 的内部 checked 作为双重验证
+  const fromTree = treeRef.value?.getCheckedKeys?.() || []
+  // 合并去重
+  return Array.from(new Set([...fromData, ...fromTree]))
+}
+
+defineExpose({
+  getSelectedRules
+})
 
 onMounted(async () => {
   await nextTick()
@@ -121,6 +138,7 @@ onMounted(async () => {
   markLeafChildrenRows()
 })
 
+// 监听 checkedRules 更新
 watch(() => props.checkedRules, async () => {
   await nextTick()
   manuallyCheckNodes(treeRef.value, props.checkedRules)
