@@ -11,7 +11,6 @@ declare module 'vue' {
     AvatarNoId: typeof import('./src/components/AvatarNoId/index.vue')['default']
     AvatarWithId: typeof import('./src/components/AvatarWithId/index.vue')['default']
     Breadcrumb: typeof import('./src/components/Breadcrumb/index.vue')['default']
-    copy: typeof import('./src/components/NotificationBell/index copy.vue')['default']
     CustomFileUpload: typeof import('./src/components/CustomFileUpload/index.vue')['default']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']
     ElBreadcrumbItem: typeof import('element-plus/es')['ElBreadcrumbItem']

@@ -178,7 +178,7 @@
     </el-dialog>
 
     <!-- 权限树弹窗 -->
-    <el-dialog :title="textMap[treeDialogStatus] + ' - ' + currentRole.name" v-model="treeDialogFormVisible" :width="getAdjustWidth(400, 400, 460)" align-center>
+    <el-dialog :title="textMap[treeDialogStatus] + ' - ' + currentRole.name" v-model="treeDialogFormVisible" :width="getAdjustWidth(400, 400, 500)" align-center>
       <div class="tw-h-[300px] tw-overflow-y-auto">
         <tree 
           :privilegeTree="privilegeTree" 

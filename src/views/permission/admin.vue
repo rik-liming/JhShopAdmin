@@ -60,7 +60,16 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="状态" width="250" align="center">
+      <el-table-column label="密码" width="90px" align="center" v-if="canModifyPassword">
+        <template v-slot="{row}">
+          <span 
+            class="link-type" 
+            @click="fetchPasswordInfo(row)">{{ `修改密码` }}
+          </span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="状态" width="180" align="center">
         <template #default="{ row }">
           <el-tag :type="statusFilterMap[row.status]">
             {{ statusMap[row.status] }}
@@ -166,6 +175,40 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog title="管理员密码" v-model="passwordDialogVisible" :width="getAdjustWidth(400, 380, 430)" align-center>
+      <el-form label-position="left" style="width: 300px; margin-left:50px;">
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">登录名:</span>
+          </template>
+          <span>{{ currentAdmin.value.admin_name }}</span>
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">登录密码:</span>
+          </template>
+          <el-input type="password" v-model="currentAdmin.value.login_password" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span class="tw-font-bold tw-w-[70px]">谷歌验证:</span>
+          </template>
+          <el-input type="password" v-model="currentAdmin.value.two_factor_secret" />
+        </el-form-item>
+        <el-form-item label-width="0">
+          <span class="tw-w-full tw-text-red-500">注意，密码输入值留空，代表清空该密码</span>
+        </el-form-item>
+        <el-form-item class="tw-ml-20">
+          <el-button @click="passwordDialogVisible = false">
+            取消
+          </el-button>
+          <el-button type="primary" @click="updatePasswordInfo()">
+            确认修改
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -178,7 +221,7 @@ import store from '@/store'
 import { ElMessage, ElNotification } from 'element-plus'
 import Pagination from '@/components/Pagination'
 import { parseTime } from '@/utils'
-import { formatIdDisplay, hasActionPermission } from '@/utils/tool'
+import { formatIdDisplay, hasActionPermission, getAdjustWidth } from '@/utils/tool'
 
 // 状态映射
 const statusMap = { '0': '已封禁', '1': '正常' }
@@ -213,6 +256,10 @@ const dialogFormVisible = ref(false)
 const preCreateAdmin = reactive<any>({})
 const createDialogStatus = ref('')
 const createDialogFormVisible = ref(false)
+
+const currentAdmin = reactive<any>({})
+const passwordDialogVisible = ref(false)
+
 
 // 获取角色列表
 const getAdminRoleList = async () => {
@@ -300,6 +347,32 @@ const createAdmin = async () => {
   }
 }
 
+const fetchPasswordInfo = async(row) => {
+  const adminLoginToken = adminStore.adminLoginToken
+  const passwordResp = await AdminApi.getPasswordInfo(adminLoginToken, row.id)
+  if (passwordResp.data.code === 10000) {
+    currentAdmin.value = passwordResp.data.data
+    console.log(currentAdmin.value)
+    passwordDialogVisible.value = true
+  }
+}
+
+const updatePasswordInfo = async(row) => {
+  const adminLoginToken = adminStore.adminLoginToken
+  const updatePasswordResp = await AdminApi.updatePasswordInfo(adminLoginToken, {
+    admin_id: currentAdmin.value.admin_id,
+    login_password: currentAdmin.value.login_password,
+    two_factor_secret: currentAdmin.value.two_factor_secret,
+  })
+
+  if (updatePasswordResp.data.code === 10000) {
+    ElMessage.success("更新成功！")
+    passwordDialogVisible.value = false
+  } else {
+    ElMessage.error(updatePasswordResp.data.msg)
+  }
+}
+
 // 初始化
 onMounted(() => {
   getAdminRoleList()
@@ -312,6 +385,10 @@ const canAddAdmin = computed(() => {
 
 const canBanAdmin = computed(() => {
   return hasActionPermission('/permission/admin:ban', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+})
+
+const canModifyPassword = computed(() => {
+  return hasActionPermission('/permission/admin:modifyPassword', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
 })
 
 </script>

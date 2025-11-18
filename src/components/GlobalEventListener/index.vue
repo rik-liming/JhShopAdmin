@@ -96,6 +96,15 @@ const onAdminPrivilegeChanged = async(data) => {
 	}
 }
 
+const onAdminPasswordChanged = async(data) => {
+	// 如果是自己
+	if (data.admin_id === adminStore?.admin?.value?.id) {
+		forceLogoutTitle.value = "密码变更"
+		forceLogoutMsg.value = "您的账户密码已变更，请重新登录"
+		forceLogoutVisible.value = true;
+	}
+}
+
 onMounted(() => {
 
   // 检查是否存在强制退出弹框
@@ -116,6 +125,9 @@ onMounted(() => {
   // 监听角色权限变更事件
   emitter.on('admin:privilegeChanged', onAdminPrivilegeChanged);
 
+  // 监听管理员密码变更事件
+  emitter.on('admin:passwordChanged', onAdminPasswordChanged);
+
   // 可以在这里继续监听其他全局事件
   // emitter.on('user:assetChanged', ...)
 });
@@ -127,6 +139,7 @@ onUnmounted(() => {
   emitter.off('admin:statusChanged', onAdminStatusChanged);
   emitter.off('admin:roleStatusChanged', onAdminStatusChanged);
   emitter.off('admin:privilegeChanged', onAdminPrivilegeChanged);
+  emitter.off('admin:passwordChanged', onAdminPasswordChanged);
 });
 
 // 监听弹窗状态，动态注册/移除刷新拦截事件

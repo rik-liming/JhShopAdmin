@@ -93,3 +93,33 @@ export async function fetchAdminList(adminLoginToken, queryParams) {
     })
     return response
 }
+
+// request admin password
+export async function getPasswordInfo(adminLoginToken, admin_id) {
+
+    // 构建请求的基础 URL
+    let requestUrl = `/api/admin/password?admin_id=${admin_id}`;
+
+    const response = await requestBase.get(requestUrl, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}
+
+// request update password
+export async function updatePasswordInfo(adminLoginToken, updateParams) {
+    const needParams = pick(updateParams, [
+        'admin_id',
+        'login_password',
+        'two_factor_secret',
+    ])
+
+    const response = await requestBase.put('/api/admin/password', needParams, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

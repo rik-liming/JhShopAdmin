@@ -15,4 +15,8 @@ export function initAdminListener() {
   channel.bind('AdminPrivilegeChanged', async (data: any) => {
 	  emitter.emit('admin:privilegeChanged', data);
   });
+
+  channel.bind('AdminPasswordChanged', async (data: any) => {
+	  emitter.emit('admin:passwordChanged', data);
+  });
 }
