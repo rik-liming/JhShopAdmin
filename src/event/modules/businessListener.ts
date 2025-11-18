@@ -7,4 +7,8 @@ export function initBusinessListener() {
   channel.bind('AdminBusinessUpdated', async (data: any) => {
 	  emitter.emit('business:updated', data);
   });
+
+  channel.bind('AdminReddotUpdated', async (data: any) => {
+	  emitter.emit('reddot:updated', data);
+  });
 }

@@ -104,6 +104,12 @@ onMounted(async() => {
   // 监听消息弹框状态变更事件
   emitter.on('message:read', onMessageRead);
 });
+
+onUnmounted(() => {
+  // 移除事件，防止重复监听
+  emitter.off('business:updated', onBusinessUpdated);
+  emitter.off('message:read', onMessageRead);
+});
 </script>
 
 <style scoped>
