@@ -83,7 +83,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" fixed="right" align="center" width="300">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" style="flex: 1; min-width: 300px" fixed="right">
         <template #default="{ row }">
           <div class="tw-flex tw-justify-center tw-gap-1 md:tw-flex-row tw-flex-col tw-items-center">
             <el-button

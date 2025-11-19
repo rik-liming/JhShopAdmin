@@ -162,13 +162,16 @@ export default defineComponent({
     };
   },
   created() {
-    this.generateTodayReport();
-    this.getList();
+    this.init()
   },
   methods: {
     parseTime,
     formatIdDisplay,
     formatPaymentMethod,
+    async init() {
+      await this.generateTodayReport();
+      this.getList();
+    },
     async getList() {
       this.listLoading = true;
       const adminLoginToken = store.admin().adminLoginToken

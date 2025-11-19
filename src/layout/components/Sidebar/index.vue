@@ -90,13 +90,13 @@ export default defineComponent({
   },
   mounted() {
     this.fetchReddot(); // 组件加载时立即请求一次
-    this.reddotTimer = setInterval(this.fetchReddot, 5 * 60 * 1000); // 每5分钟请求一次，校正一下，以防推送没收到
+    // this.reddotTimer = setInterval(this.fetchReddot, 5 * 60 * 1000); // 每5分钟请求一次，校正一下，以防推送没收到
     
     // 监听红点变更事件
     emitter.on('reddot:updated', this.onReddotUpdated);
   },
   beforeUnmount() {
-    clearInterval(this.reddotTimer); // 销毁组件时清理定时器
+    // clearInterval(this.reddotTimer); // 销毁组件时清理定时器
 
     // 移除红点变更事件监听
     emitter.off('reddot:updated', this.onReddotUpdated);

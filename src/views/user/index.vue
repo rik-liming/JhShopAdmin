@@ -62,7 +62,6 @@
             class="link-type" 
             @click="fetchPasswordInfo(row)">{{ `修改密码` }}
           </span>
-          <span>-</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" width="100" align="center">
