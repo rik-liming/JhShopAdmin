@@ -161,6 +161,7 @@ const paymentMethodOptions = [
   { key: 'alipay', display_name: '支付宝' },
   { key: 'wechat', display_name: '微信' },
   { key: 'bank', display_name: '银行卡' },
+  { key: 'ecny', display_name: '数字人民币' },
 ];
 const statusMap = {
   '0': '已下架',

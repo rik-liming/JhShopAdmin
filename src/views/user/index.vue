@@ -20,7 +20,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="200" >
+      <el-table-column label="ID" prop="id" align="center" width="150" >
         <template v-slot="{row}">
           <span class="link-type" @click="handleShowDetail(row)">{{ formatIdDisplay(row.id) }}</span>
         </template>
@@ -30,7 +30,7 @@
           <span class="link-type" @click="handleShowDetail(row)">{{ row.email ? row.email : '-' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="角色" width="150px" align="center">
+      <el-table-column label="角色" width="140px" align="center">
         <template v-slot="{row}">
           <span class="link-type" @click="handleShowRole(row)">{{ row.role ? roleTypeMap[row.role] : '-' }}</span>
         </template>
@@ -43,7 +43,8 @@
       <el-table-column label="上下级" width="90px" align="center" v-if="canScanInviterRelation">
         <template v-slot="{row}">
           <span v-if="row.role == 'agent'" class="link-type" @click="fetchInviteRelation(row)">{{ `查看下级` }}</span>
-          <span>-</span>
+          <span v-else-if="row.role == 'seller'">上级: {{ formatIdDisplay(row.root_agent_id) }}</span>
+          <span v-else>-</span>
         </template>
       </el-table-column>
       <el-table-column label="资产" width="90px" align="center" v-if="canScanAccount">
@@ -53,7 +54,7 @@
             class="link-type" 
             @click="fetchAccountInfo(row)">{{ `查看资产` }}
           </span>
-          <span>-</span>
+          <span v-else>-</span>
         </template>
       </el-table-column>
       <el-table-column label="密码" width="90px" align="center" v-if="canModifyPassword">
@@ -62,6 +63,23 @@
             class="link-type" 
             @click="fetchPasswordInfo(row)">{{ `修改密码` }}
           </span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="是否发放佣金" 
+        width="120px" 
+        align="center" 
+        v-if="canSwitchCommission"
+      >
+        <template v-slot="{row}">
+          <el-switch 
+            v-if="row.role == 'agent' || row.role == 'buyer'"
+            v-model="row.has_commission"
+            :active-value="1"
+            :inactive-value="0"
+            @change="updateCommissionSwitch(row)"
+          />
+          <span v-else>-</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" width="100" align="center">
@@ -286,7 +304,7 @@
             v-model="currentUser.role" 
             class="filter-item" 
             placeholder="请选择角色"
-            v-if="canGrantSpecialRole && canGrantNormalRole"
+            v-if="canGrantSpecialRole && canGrantNormalRole && currentUser.preRole === 'default'"
           >
             <el-option v-for="item in canSelectAllRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
@@ -294,7 +312,7 @@
             v-model="currentUser.role" 
             class="filter-item" 
             placeholder="请选择角色"
-            v-else-if="canGrantSpecialRole"
+            v-else-if="canGrantSpecialRole && currentUser.preRole === 'default'"
           >
             <el-option v-for="item in canSelectSpecialRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
@@ -302,7 +320,7 @@
             v-model="currentUser.role" 
             class="filter-item" 
             placeholder="请选择角色"
-            v-else-if="canGrantNormalRole"
+            v-else-if="canGrantNormalRole && currentUser.preRole === 'default'"
           >
             <el-option v-for="item in canSelectNormalRoleTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
@@ -465,6 +483,10 @@ export default defineComponent({
       const adminStore = store.admin()
       return hasActionPermission('/user/index:ban', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
     },
+    canSwitchCommission() {
+      const adminStore = store.admin()
+      return hasActionPermission('/user/index:switchCommission', adminStore?.admin?.value?.id, adminStore?.admin?.value?.role)
+    },
   },
   methods: {
     parseTime,
@@ -599,6 +621,19 @@ export default defineComponent({
         ElMessage.error(updatePasswordResp.data.msg)
       }
     },
+    async updateCommissionSwitch(row) {
+      const adminLoginToken = store.admin().adminLoginToken
+      const updateResp = await UserApi.updateCommissionSwitch(adminLoginToken, {
+        user_id: row.id,
+        has_commission: row.has_commission,
+      })
+
+      if (updateResp.data.code === 10000) {
+        ElMessage.success("更新成功！")
+      } else {
+        ElMessage.error(updateResp.data.msg)
+      }
+    },
     getRemoteBuyLink(autoBuyerId) {
       return `${import.meta.env.VITE_SHOP_ENDPOINT}/#/remote/buy?autoBuyerId=${autoBuyerId}`
     },
@@ -617,6 +652,7 @@ export default defineComponent({
     },
     handleShowRole(row) {
       this.currentUser = Object.assign({}, row); // copy obj
+      this.currentUser.preRole = this.currentUser.role
       this.changeRoleVisible = true
     },
     async updateRole() {

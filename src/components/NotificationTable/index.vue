@@ -92,7 +92,7 @@ const minTableRowCount = ref(15)
 const isRefreshing = ref(false)
 const touchStartY = ref(0) // 触摸开始位置
 const touchMoveY = ref(0) // 触摸移动位置
-const threshold = ref(50) // 下拉刷新阈值
+const threshold = ref(300) // 下拉刷新阈值
 
 // 获取数据的逻辑
 const getList = async () => {

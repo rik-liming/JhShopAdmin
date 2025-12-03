@@ -131,3 +131,18 @@ export async function updateRole(adminLoginToken, updateParams) {
     })
     return response
 }
+
+// request update commission switch
+export async function updateCommissionSwitch(adminLoginToken, updateParams) {
+    const needParams = pick(updateParams, [
+        'user_id',
+        'has_commission',
+    ])
+
+    const response = await requestBase.put('/api/admin/user/commission', needParams, {
+        headers: {
+            Authorization: `Bearer ${adminLoginToken}`,
+        }
+    })
+    return response
+}

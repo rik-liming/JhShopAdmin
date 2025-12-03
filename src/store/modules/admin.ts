@@ -4,9 +4,10 @@ import tagsViewStore from './tagsView';
 import permissionStore from './permission';
 import * as AdminApi from '@/api/admin'
 import { useStorage } from '@vueuse/core'
+import { v4 as uuidv4 } from 'uuid';
 
 // 每个浏览器 tab 都有独立的 ID
-const tabId = sessionStorage.getItem('tabId') || crypto.randomUUID();
+const tabId = sessionStorage.getItem('tabId') || uuidv4();
 sessionStorage.setItem('tabId', tabId);
 
 export interface IAdmin {

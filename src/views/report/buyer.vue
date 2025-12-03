@@ -50,24 +50,24 @@
           <span class="link-type" @click="handleShowDetail(row)">{{ row.user_email }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" width="150px" align="center">
+      <el-table-column label="订单状态" width="100px" align="center">
         <template v-slot="{row}">
           <el-tag type="success">
             {{ `成功` }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="日成交笔数" width="200px" align="center">
+      <el-table-column label="日成交笔数" width="130px" align="center">
         <template v-slot="{row}">
           <span>{{ row.order_count }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="日成交总额（USDT）" width="200px" align="center">
+      <el-table-column label="日成交总额（USDT）" width="180px" align="center">
         <template v-slot="{row}">
           <span>{{ row.total_amount }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="佣金比例（%）" width="200px" align="center">
+      <el-table-column label="佣金比例（%）" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.commission_rate }}</span>
         </template>
@@ -75,6 +75,13 @@
       <el-table-column label="佣金（USDT）" width="200px" align="center">
         <template v-slot="{row}">
           <span>{{ row.commission_amount }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="是否发放佣金" width="200px" align="center">
+        <template v-slot="{row}">
+          <el-tag :type="hasCommissionStatusFilterMap[row.has_commission]">
+            {{ hasCommissionStatusMap[row.has_commission] }}
+          </el-tag>
         </template>
       </el-table-column>
     </el-table>
@@ -111,8 +118,11 @@
         <el-form-item label="佣金（USDT）">
           <span>{{ temp.commission_amount }}</span>
         </el-form-item>
-        
-        
+        <el-form-item label="是否发放佣金">
+          <el-tag :type="hasCommissionStatusFilterMap[temp.has_commission]">
+            {{ hasCommissionStatusMap[temp.has_commission] }}
+          </el-tag>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="tw-flex tw-justify-start tw-ml-40">
@@ -141,11 +151,11 @@ const paymentMethodOptions = [
   { key: 'wechat', display_name: '微信' },
   { key: 'bank', display_name: '银行卡' },
 ];
-const statusMap = {
-  '0': '已下线',
-  '1': '正常',
+const hasCommissionStatusMap = {
+  '0': '不发放',
+  '1': '发放',
 }
-const statusFilterMap = {
+const hasCommissionStatusFilterMap = {
   '0': 'danger',
   '1': 'success',
 };
@@ -169,8 +179,8 @@ export default defineComponent({
       minTableRowCount: 15,
       isRequesting: false,
       paymentMethodOptions,
-      statusMap,
-      statusFilterMap,
+      hasCommissionStatusMap,
+      hasCommissionStatusFilterMap,
       dialogStatus: '',
       textMap: {
         detail: '详情',

@@ -30,6 +30,7 @@ export function formatPaymentMethod(payment_method) {
         'alipay': '支付宝',
         'wechat': '微信',
         'bank': '银行卡',
+        'ecny': '数字人民币',
     }
     return paymentMethodMap[payment_method]
 }

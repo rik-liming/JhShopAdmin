@@ -35,6 +35,8 @@ const vuetify = createVuetify({
 
 import waves from '@/directive/waves'
 import { initEventListeners } from '@/event/modules/index';
+// import VConsole from 'vconsole';
+// const vConsole = new VConsole();
 
 const app = createApp(App);
 setupStore(app);

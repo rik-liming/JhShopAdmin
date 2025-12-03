@@ -4,7 +4,7 @@
     <el-row>
       <el-col :lg="8">
         <!-- 基本信息 -->
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[400px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[440px]">
           <el-form-item label="广告文字">
             <el-input 
               type="textarea" 
@@ -47,7 +47,7 @@
       </el-col>
 
       <el-col :lg="8">
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[400px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[440px]">
           
           <el-form-item label="平台汇率">
             <el-input-number 
@@ -85,6 +85,15 @@
             />
           </el-form-item>
 
+          <el-form-item label="数字人民币汇率">
+            <el-input-number 
+              v-model="form.exchange_rate_ecny" 
+              :min="0" 
+              :step="0.01" 
+              :disabled="!canModifyConfig"
+            />
+          </el-form-item>
+
           <el-form-item label="代理佣金比例（%）">
             <el-input-number 
               v-model="form.agent_commission_rate" 
@@ -106,7 +115,7 @@
       </el-col>
 
       <el-col :lg="8">
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[400px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[440px]">
           <!-- 优化后的远程订单配置 -->
           <el-form-item label="远程下单开放市场">
             <el-checkbox-group 
@@ -116,6 +125,7 @@
               <el-checkbox label="alipay">支付宝</el-checkbox>
               <el-checkbox label="wechat">微信</el-checkbox>
               <el-checkbox label="bank">银行卡</el-checkbox>
+              <el-checkbox label="ecny">数字人民币</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
 
