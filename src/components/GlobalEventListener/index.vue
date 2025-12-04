@@ -53,6 +53,10 @@ const messageDialogTitle = ref('')
 const messageDialogTableKey = ref(Math.random())
 
 const onBusinessUpdated = async(data) => {
+	if (!adminStore?.admin?.value?.role) {
+		return
+	}
+
 	messageDialogTitle.value = "待处理业务消息"
 	
 	updateTableKey()

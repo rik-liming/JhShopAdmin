@@ -10,11 +10,11 @@ export async function getConfigInfo(adminLoginToken) {
     return response
 }
 
-// update config info
-export async function updateConfigInfo(adminLoginToken, data) {
-    const response = await requestBase.put('/api/admin/config', data, {
+export async function updateConfigInfo(adminLoginToken, formData) {
+    const response = await requestBase.post('/api/admin/config', formData, {
         headers: {
             Authorization: `Bearer ${adminLoginToken}`,
+            'Content-Type': 'multipart/form-data',
         }
     })
     return response

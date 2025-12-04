@@ -4,7 +4,7 @@
     <el-row>
       <el-col :lg="8">
         <!-- 基本信息 -->
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[440px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[480px]">
           <el-form-item label="广告文字">
             <el-input 
               type="textarea" 
@@ -22,9 +22,18 @@
             />
           </el-form-item>
 
-          <!-- <el-form-item label="支付二维码">
-            <el-input v-model="form.payment_qr_code" placeholder="请输入支付二维码 URL" />
-          </el-form-item> -->
+          <el-form-item>
+            <template #label>
+              <span class="tw-font-bold tw-w-[70px]">平台收款二维码:</span>
+            </template>
+            <div class="tw-w-full">
+              <CustomFileUpload 
+                v-model:file="form.payment_qr_code_image"
+                v-model:hasChanged="form.payment_qr_code_changed"
+                :imageUrl="form.payment_qr_code_url"
+              />
+            </div>
+          </el-form-item>
 
           <el-form-item label="转账手续费 (USDT)">
             <el-input-number
@@ -47,7 +56,7 @@
       </el-col>
 
       <el-col :lg="8">
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[440px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[480px]">
           
           <el-form-item label="平台汇率">
             <el-input-number 
@@ -115,7 +124,7 @@
       </el-col>
 
       <el-col :lg="8">
-        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[440px]">
+        <el-card class="tw-p-6 tw-m-4 tw-rounded-lg tw-min-h-[480px]">
           <!-- 优化后的远程订单配置 -->
           <el-form-item label="远程下单开放市场">
             <el-checkbox-group 
@@ -203,11 +212,15 @@ import { reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import * as ConfigApi from '@/api/config'
 import store from '@/store';
-import { hasActionPermission } from '@/utils/tool'
+import { hasActionPermission, formatImageUrl } from '@/utils/tool'
+import CustomFileUpload from '@/components/CustomFileUpload';
 
 interface PlatformConfig {
   payment_address: string;
   payment_qr_code: string;
+  payment_qr_code_url: string;
+  payment_qr_code_image: any;
+  payment_qr_code_changed: false;
   transfer_fee: number;
   withdrawl_fee: number;
   agent_commission_rate: number;
@@ -216,6 +229,7 @@ interface PlatformConfig {
   exchange_rate_alipay: number;
   exchange_rate_wechat: number;
   exchange_rate_bank: number;
+  exchange_rate_ecny: number;
   advertisement_text: string;
   remote_order_config: {
     openMarkets: string[];
@@ -230,6 +244,9 @@ const formRef = ref();
 const form = reactive<PlatformConfig>({
   payment_address: '',
   payment_qr_code: '',
+  payment_qr_code_url: '',
+  payment_qr_code_image: null,
+  payment_qr_code_changed: false,
   transfer_fee: 0,
   withdrawl_fee: 0,
   agent_commission_rate: 0,
@@ -238,6 +255,7 @@ const form = reactive<PlatformConfig>({
   exchange_rate_alipay: 0,
   exchange_rate_wechat: 0,
   exchange_rate_bank: 0,
+  exchange_rate_ecny: 0,
   advertisement_text: '',
   remote_order_config: {
     openMarkets: ['alipay', 'wechat', 'bank'],
@@ -277,6 +295,11 @@ const loadConfig = async () => {
     if (res.data.code === 10000) {
       Object.assign(form, res.data.data.config);
 
+      // 二维码处理
+      if (form.payment_qr_code) {
+        form.payment_qr_code_url = formatImageUrl(form.payment_qr_code)
+      }
+
       // 远程订单配置同步
       remoteConfig.openMarkets = [...form.remote_order_config.openMarkets];
       remoteConfig.amountOptions = [...form.remote_order_config.amountOptions];
@@ -294,9 +317,22 @@ const submit = async () => {
     form.remote_order_config.openMarkets = [...remoteConfig.openMarkets];
     form.remote_order_config.amountOptions = [...remoteConfig.amountOptions];
 
-    const updateResp = await ConfigApi.updateConfigInfo(adminStore.adminLoginToken, form);
+    const formData = new FormData();
+
+    // 远程下单和支付二维码单独处理
+    Object.entries(form).forEach(([key, value]) => {
+        if (key === 'remote_order_config' || key === 'payment_qr_code_image') return
+        formData.append(key, value instanceof Blob ? value : String(value))
+    })
+
+    formData.append('remote_order_config', JSON.stringify(form.remote_order_config))
+    formData.append('payment_qr_code_image', form.payment_qr_code_image)
+
+    const updateResp = await ConfigApi.updateConfigInfo(adminStore.adminLoginToken, formData);
     if (updateResp.data.code === 10000) {
       ElMessage.success('配置已保存');
+    } else {
+      ElMessage.error(updateResp.data.msg);
     }
   } catch (err) {
     console.error(err);
