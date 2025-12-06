@@ -214,17 +214,6 @@ export const asyncRoutes:RouteRecordRaw[] = [
     component: Layout,
     children: [
       {
-        path: 'record',
-        component: () => import('@/views/transaction/record.vue'),
-        name: 'TransactionRecord',
-        meta: { 
-          title: '财务变动', 
-          affix: true,
-          needIndent: true,
-          hidden: true,
-        }
-      },
-      {
         path: 'recharge',
         component: () => import('@/views/transaction/recharge.vue'),
         name: 'TransactionRecharge',
